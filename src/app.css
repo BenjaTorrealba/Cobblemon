@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-poke-darker text-gray-100 font-body;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-semibold;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-poke-surface;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-poke-accent rounded-full;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-poke-surface border border-poke-border rounded-xl p-6;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-300 hover:border-poke-accent hover:shadow-lg hover:shadow-poke-accent/20;
+  }
+
+  .btn-primary {
+    @apply bg-poke-accent hover:bg-poke-accent2 text-white font-semibold px-5 py-2.5 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-poke-accent/30 active:scale-95 inline-flex items-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply bg-poke-surface2 hover:bg-poke-border text-gray-200 font-medium px-5 py-2.5 rounded-lg transition-all duration-200 border border-poke-border hover:border-poke-accent/50 active:scale-95 inline-flex items-center gap-2;
+  }
+
+  .btn-danger {
+    @apply bg-red-900/50 hover:bg-red-800 text-red-300 hover:text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 border border-red-800 hover:border-red-600 active:scale-95 inline-flex items-center gap-2;
+  }
+
+  .btn-success {
+    @apply bg-emerald-900/50 hover:bg-emerald-800 text-emerald-300 hover:text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 border border-emerald-800 hover:border-emerald-500 active:scale-95 inline-flex items-center gap-2;
+  }
+
+  .input {
+    @apply bg-poke-surface border border-poke-border rounded-lg px-4 py-2.5 w-full text-gray-100 placeholder-gray-500 focus:outline-none focus:border-poke-accent focus:ring-1 focus:ring-poke-accent transition-colors;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-gray-400 mb-1.5;
+  }
+
+  .badge-online {
+    @apply inline-flex items-center gap-1.5 bg-emerald-900/40 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-700/50;
+  }
+
+  .badge-offline {
+    @apply inline-flex items-center gap-1.5 bg-red-900/40 text-red-400 text-xs font-semibold px-3 py-1 rounded-full border border-red-700/50;
+  }
+
+  .badge-scheduled {
+    @apply inline-flex items-center gap-1.5 bg-blue-900/40 text-blue-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-700/50;
+  }
+
+  .badge-completed {
+    @apply inline-flex items-center gap-1.5 bg-gray-800 text-gray-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-gray-700;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-white mb-6 flex items-center gap-3;
+  }
+
+  .table-container {
+    @apply w-full overflow-x-auto rounded-xl border border-poke-border;
+  }
+
+  .table {
+    @apply w-full text-sm;
+  }
+
+  .table thead {
+    @apply bg-poke-surface2;
+  }
+
+  .table th {
+    @apply px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider;
+  }
+
+  .table td {
+    @apply px-4 py-3.5 border-t border-poke-border;
+  }
+
+  .table tbody tr {
+    @apply bg-poke-surface hover:bg-poke-surface2 transition-colors;
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-poke-accent to-poke-blue bg-clip-text text-transparent;
+  }
+}

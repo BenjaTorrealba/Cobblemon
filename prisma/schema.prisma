@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           Int    @id @default(autoincrement())
+  username     String @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Tournament {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  format      String
+  rules       String
+  startDate   DateTime
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  players     TournamentPlayer[]
+  matches     Match[]
+}
+
+model Player {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  tournaments TournamentPlayer[]
+  matchesAsPlayer1 Match[] @relation("Player1Matches")
+  matchesAsPlayer2 Match[] @relation("Player2Matches")
+  wonMatches       Match[] @relation("WonMatches")
+}
+
+model TournamentPlayer {
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId Int
+  player       Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId     Int
+  joinedAt     DateTime   @default(now())
+
+  @@id([tournamentId, playerId])
+}
+
+model News {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  category    String   @default("general") // general | tournament | update
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Match {
+  id           Int      @id @default(autoincrement())
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId Int
+  player1      Player   @relation("Player1Matches", fields: [player1Id], references: [id])
+  player1Id    Int
+  player2      Player   @relation("Player2Matches", fields: [player2Id], references: [id])
+  player2Id    Int
+  scheduledAt  DateTime
+  status       String   @default("scheduled") // scheduled | completed
+  winner       Player?  @relation("WonMatches", fields: [winnerId], references: [id])
+  winnerId     Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
