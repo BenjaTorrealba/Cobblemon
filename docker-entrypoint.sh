@@ -5,4 +5,4 @@ npx prisma db push
 echo "Seeding admin users..."
 node prisma/seed.js
 echo "Starting server..."
-node build/index.js   # o: npx vite preview --host --port 4173
+node build/index.js

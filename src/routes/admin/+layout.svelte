@@ -17,6 +17,7 @@
     { href: '/admin/players', label: 'Jugadores', icon: '👥' },
     { href: '/admin/matches', label: 'Enfrentamientos', icon: '⚔' },
     { href: '/admin/news', label: 'Noticias', icon: '📢' },
+    { href: '/admin/users', label: 'Usuarios', icon: '🔑' },
   ];
 </script>
 

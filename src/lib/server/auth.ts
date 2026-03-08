@@ -1,12 +1,16 @@
 import { createHash, randomBytes } from 'crypto';
 import { prisma } from './prisma.js';
-import { env } from '$env/dynamic/private';
 
 const SESSIONS = new Map<string, { adminId: number; username: string; expires: number }>();
 
+function getSecret(): string {
+  const s = process.env.SESSION_SECRET ?? 'cobblemon-secret-change-me-in-production-abc123xyz';
+  console.log('[auth] getSecret prefix:', s.slice(0, 10));
+  return s;
+}
+
 export function hashPassword(password: string): string {
-  const secret = env.SESSION_SECRET ?? 'cobblemon-secret-change-me-in-production-abc123xyz';
-  return createHash('sha256').update(password + secret).digest('hex');
+  return createHash('sha256').update(password + getSecret()).digest('hex');
 }
 
 export function createSession(adminId: number, username: string, maxAgeSeconds = 28800): string {
@@ -33,7 +37,6 @@ export function deleteSession(token: string): void {
 export async function validateAdmin(username: string, password: string) {
   const admin = await prisma.admin.findUnique({ where: { username } });
   if (!admin) return null;
-  const hash = hashPassword(password);
-  if (hash !== admin.passwordHash) return null;
+  if (hashPassword(password) !== admin.passwordHash) return null;
   return admin;
 }

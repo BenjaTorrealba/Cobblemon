@@ -20,7 +20,7 @@ function loadEnv() {
   return 'cobblemon-secret-change-me-in-production-abc123xyz';
 }
 
-const SESSION_SECRET = process.env.SESSION_SECRET || loadEnv();
+const SESSION_SECRET = loadEnv();
 
 function hashPassword(password) {
   return createHash('sha256').update(password + SESSION_SECRET).digest('hex');
@@ -31,7 +31,7 @@ async function main() {
   // CHANGE THESE PASSWORDS before deploying!
   await prisma.admin.upsert({
     where: { username: 'admin1' },
-    update: {},
+    update: { passwordHash: hashPassword('changeme1') },
     create: {
       username: 'admin1',
       passwordHash: hashPassword('changeme1'),
@@ -40,7 +40,7 @@ async function main() {
 
   await prisma.admin.upsert({
     where: { username: 'admin2' },
-    update: {},
+    update: { passwordHash: hashPassword('changeme2') },
     create: {
       username: 'admin2',
       passwordHash: hashPassword('changeme2'),

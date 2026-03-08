@@ -3,10 +3,10 @@ services:
     build: .
     container_name: cobblemon-web
     ports:
-      - "4173:4173"
+      - "3000:3000"
     environment:
       - HOST=0.0.0.0
-      - PORT=4173
+      - PORT=3000
     volumes:
       - ./data/dev.db:/app/prisma/dev.db
     env_file:
