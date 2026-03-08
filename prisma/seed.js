@@ -20,7 +20,7 @@ function loadEnv() {
   return 'cobblemon-secret-change-me-in-production-abc123xyz';
 }
 
-const SESSION_SECRET = loadEnv();
+const SESSION_SECRET = process.env.SESSION_SECRET || loadEnv();
 
 function hashPassword(password) {
   return createHash('sha256').update(password + SESSION_SECRET).digest('hex');

@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    container_name: cobblemon-web
+    ports:
+      - "4173:4173"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=4173
+    volumes:
+      - ./data/dev.db:/app/prisma/dev.db
+    env_file:
+      - .env
+    restart: unless-stopped

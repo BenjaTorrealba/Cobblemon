@@ -1,11 +1,12 @@
 import { createHash, randomBytes } from 'crypto';
 import { prisma } from './prisma.js';
-import { SESSION_SECRET } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 const SESSIONS = new Map<string, { adminId: number; username: string; expires: number }>();
 
 export function hashPassword(password: string): string {
-  return createHash('sha256').update(password + SESSION_SECRET).digest('hex');
+  const secret = env.SESSION_SECRET ?? 'cobblemon-secret-change-me-in-production-abc123xyz';
+  return createHash('sha256').update(password + secret).digest('hex');
 }
 
 export function createSession(adminId: number, username: string, maxAgeSeconds = 28800): string {
