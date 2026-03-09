@@ -59,7 +59,7 @@
 
   function clearTeam() {
     pokemons = Array.from({ length: 6 }, (_, i) => makeEmptySlot(i + 1));
-    teamName = 'Mi Equipo';
+    teamName = '';
     teamDesc = '';
     message = '';
   }
