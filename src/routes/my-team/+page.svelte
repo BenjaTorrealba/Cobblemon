@@ -21,6 +21,7 @@
 
   let teamName = $state(data.team?.name ?? 'Mi Equipo');
   let teamDesc = $state(data.team?.description ?? '');
+  let published = $state(data.team?.published ?? false);
   let pokemons = $state<PokemonSlot[]>(
     Array.from({ length: 6 }, (_, i) => {
       const existing = data.team?.pokemons.find((p: PokemonSlot) => p.slot === i + 1);
@@ -39,7 +40,7 @@
       const res = await fetch('/api/teams', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: teamName, description: teamDesc, pokemons }),
+        body: JSON.stringify({ name: teamName, description: teamDesc, pokemons, published }),
       });
       if (res.ok) {
         message = '¡Equipo guardado correctamente!';
@@ -55,6 +56,21 @@
       saving = false;
     }
   }
+
+  async function togglePublish() {
+    published = !published;
+    const res = await fetch('/api/teams', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: teamName, description: teamDesc, pokemons, published }),
+    });
+    if (res.ok) {
+      message = published ? 'Equipo publicado. ¡Ahora todos pueden verlo!' : 'Equipo ocultado.';
+      messageType = 'success';
+    } else {
+      published = !published; // revert on error
+    }
+  }
 </script>
 
 <svelte:head><title>Mi Equipo &mdash; Cobbleverse</title></svelte:head>
@@ -65,6 +81,27 @@
     <p class="text-gray-500 text-sm">
       Hola, <span class="text-poke-accent">@{data.user.username}</span>. Diseña tu equipo Cobblemon.
     </p>
+  </div>
+
+  <!-- Visibility banner -->
+  <div class="mb-6 flex items-center justify-between rounded-xl border px-4 py-3
+    {published ? 'border-emerald-700/50 bg-emerald-900/20' : 'border-poke-border bg-poke-surface2'}">
+    <div>
+      <p class="text-sm font-medium {published ? 'text-emerald-400' : 'text-gray-400'}">
+        {published ? '🌐 Equipo público' : '🔒 Equipo privado'}
+      </p>
+      <p class="text-xs text-gray-600 mt-0.5">
+        {published ? 'Todos pueden ver tu equipo en /equipos.' : 'Solo tú puedes ver tu equipo.'}
+      </p>
+    </div>
+    <button
+      onclick={togglePublish}
+      class="text-xs px-3 py-1.5 rounded-lg border transition-colors
+        {published
+          ? 'border-red-700/50 text-red-400 hover:bg-red-900/30'
+          : 'border-poke-accent/50 text-poke-accent hover:bg-poke-accent/10'}">
+      {published ? 'Ocultar' : 'Publicar'}
+    </button>
   </div>
 
   <!-- Team info -->

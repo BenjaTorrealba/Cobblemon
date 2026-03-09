@@ -93,6 +93,7 @@ model Team {
   userId      Int           @unique
   name        String        @default("Mi Equipo")
   description String        @default("")
+  published   Boolean       @default(false)
   updatedAt   DateTime      @updatedAt
   pokemons    TeamPokemon[]
 }
@@ -112,4 +113,9 @@ model TeamPokemon {
   move4       String @default("")
 
   @@unique([teamId, slot])
+}
+
+model SiteSettings {
+  id               Int    @id @default(1)
+  registrationCode String @default("")
 }

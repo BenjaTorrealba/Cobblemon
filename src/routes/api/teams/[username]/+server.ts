@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types.js';
 
 export const GET: RequestHandler = async ({ params }) => {
   const team = await prisma.team.findFirst({
-    where: { user: { username: params.username } },
+    where: { user: { username: params.username }, published: true },
     include: {
       user: { select: { username: true } },
       pokemons: { orderBy: { slot: 'asc' } },

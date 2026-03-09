@@ -77,10 +77,7 @@
 <section class="relative overflow-hidden bg-poke-darker">
   <div class="absolute inset-0 bg-gradient-radial from-poke-accent/10 via-transparent to-transparent pointer-events-none"></div>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-    <div class="inline-flex items-center gap-2 bg-poke-surface border border-poke-border rounded-full px-4 py-1.5 text-xs text-poke-accent mb-6">
-      <span class="w-1.5 h-1.5 rounded-full bg-poke-accent animate-pulse"></span>
-      Temporada activa
-    </div>
+
     <h1 class="font-display text-2xl sm:text-3xl lg:text-4xl text-white mb-4 leading-relaxed">
       COBBLEVERSE<br/><span class="text-gradient">TOURNAMENTS</span>
     </h1>

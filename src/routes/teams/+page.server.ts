@@ -3,6 +3,7 @@ import { prisma } from '$lib/server/prisma.js';
 
 export const load: PageServerLoad = async () => {
   const teams = await prisma.team.findMany({
+    where: { published: true },
     include: {
       user: { select: { username: true } },
       pokemons: { orderBy: { slot: 'asc' } },

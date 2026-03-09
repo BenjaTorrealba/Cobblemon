@@ -7,6 +7,23 @@
   let createError = $state('');
   let creating = $state(false);
 
+  let regCode = $state(data.registrationCode);
+  let savingCode = $state(false);
+  let codeMsg = $state('');
+
+  async function saveCode() {
+    savingCode = true;
+    codeMsg = '';
+    const res = await fetch('/api/settings/registration-code', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: regCode }),
+    });
+    savingCode = false;
+    codeMsg = res.ok ? 'Guardado.' : 'Error al guardar.';
+    setTimeout(() => codeMsg = '', 2500);
+  }
+
   async function createUser(e: Event) {
     e.preventDefault();
     createError = '';
@@ -56,6 +73,28 @@
   <div>
     <h1 class="text-2xl font-bold text-white">Usuarios</h1>
     <p class="text-gray-500 text-sm mt-1">Gestión de cuentas de jugadores</p>
+  </div>
+
+  <!-- Registration code -->
+  <div class="card">
+    <h2 class="font-semibold text-white mb-1">Código de registro</h2>
+    <p class="text-xs text-gray-500 mb-3">Los jugadores necesitan este código para crear su cuenta. Deja vacío para deshabilitar el registro.</p>
+    <div class="flex gap-3 items-end">
+      <div class="flex-1">
+        <input type="text" bind:value={regCode} class="input" placeholder="Ej: cobble2026" />
+      </div>
+      <button onclick={saveCode} disabled={savingCode} class="btn-primary py-2">
+        {savingCode ? 'Guardando...' : 'Guardar'}
+      </button>
+    </div>
+    {#if codeMsg}<p class="text-xs text-emerald-400 mt-2">{codeMsg}</p>{/if}
+    {#if regCode}
+      <p class="text-xs text-gray-500 mt-2">Link de registro:
+        <a href="/register" target="_blank" class="text-poke-accent hover:underline">cobbleverse.com/register</a>
+      </p>
+    {:else}
+      <p class="text-xs text-red-500/70 mt-2">⚠️ Registro deshabilitado (código vacío).</p>
+    {/if}
   </div>
 
   <!-- Create user -->

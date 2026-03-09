@@ -4,6 +4,7 @@ import type { RequestHandler } from './$types.js';
 
 export const GET: RequestHandler = async () => {
   const teams = await prisma.team.findMany({
+    where: { published: true },
     include: {
       user: { select: { username: true } },
       pokemons: { orderBy: { slot: 'asc' } },
@@ -17,18 +18,20 @@ export const PUT: RequestHandler = async ({ request, locals }) => {
   if (!locals.user) return json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await request.json();
-  const { name, description, pokemons } = body;
+  const { name, description, pokemons, published } = body;
 
   const team = await prisma.team.upsert({
     where: { userId: locals.user.id },
     update: {
       name: String(name || 'Mi Equipo'),
       description: String(description || ''),
+      ...(published !== undefined ? { published: Boolean(published) } : {}),
     },
     create: {
       userId: locals.user.id,
       name: String(name || 'Mi Equipo'),
       description: String(description || ''),
+      published: false,
     },
   });
 

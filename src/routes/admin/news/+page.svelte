@@ -10,6 +10,17 @@
   let form = $state({ title: '', content: '', category: 'general', published: true });
   let saving = $state(false);
   let error = $state('');
+  let contentTextarea: HTMLTextAreaElement;
+
+  function insertAtCursor(prefix: string) {
+    const el = contentTextarea;
+    if (!el) return;
+    const start = el.selectionStart;
+    const before = form.content.slice(0, start);
+    const after  = form.content.slice(start);
+    const needsNewline = before.length > 0 && !before.endsWith('\n');
+    form.content = before + (needsNewline ? '\n' : '') + prefix + after;
+  }
 
   const CATEGORIES = [
     { value: 'general',    label: 'General' },
@@ -164,12 +175,24 @@
 
         <div>
           <label class="label" for="n-content">Contenido</label>
+          <div class="flex gap-2 mb-1.5">
+            <button type="button" onclick={() => insertAtCursor('## ')}
+              class="text-xs px-2.5 py-1 rounded border border-poke-border text-gray-400 hover:text-white hover:border-gray-500 transition-colors">
+              H2 Título
+            </button>
+            <button type="button" onclick={() => insertAtCursor('### ')}
+              class="text-xs px-2.5 py-1 rounded border border-poke-border text-gray-400 hover:text-white hover:border-gray-500 transition-colors">
+              H3 Subtítulo
+            </button>
+          </div>
           <textarea
             id="n-content"
             bind:value={form.content}
-            class="input resize-none h-40"
-            placeholder="Escribe el anuncio o noticia aquí..."
+            bind:this={contentTextarea}
+            class="input resize-none h-52 font-mono text-sm"
+            placeholder="Escribe el contenido aquí...&#10;&#10;## Usa ## para títulos&#10;### Usa ### para subtítulos&#10;Texto normal para párrafos."
           ></textarea>
+          <p class="text-xs text-gray-600 mt-1">Usa <code class="text-gray-500">## Título</code> y <code class="text-gray-500">### Subtítulo</code> al inicio de una línea.</p>
         </div>
 
         <div class="flex items-center gap-3">

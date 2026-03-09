@@ -4,9 +4,7 @@ import { prisma } from './prisma.js';
 const SESSIONS = new Map<string, { adminId: number; username: string; expires: number }>();
 
 function getSecret(): string {
-  const s = process.env.SESSION_SECRET ?? 'cobblemon-secret-change-me-in-production-abc123xyz';
-  console.log('[auth] getSecret prefix:', s.slice(0, 10));
-  return s;
+  return process.env.SESSION_SECRET ?? 'cobblemon-secret-change-me-in-production-abc123xyz';
 }
 
 export function hashPassword(password: string): string {

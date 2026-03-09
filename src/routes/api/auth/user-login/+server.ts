@@ -5,11 +5,9 @@ import type { RequestHandler } from './$types.js';
 export const POST: RequestHandler = async ({ request, cookies }) => {
   const body = await request.json();
   const { username, password } = body;
-  console.log('[user-login] attempt:', username);
   if (!username || !password) return json({ error: 'Credenciales requeridas' }, { status: 400 });
 
   const user = await validateUser(String(username), String(password));
-  console.log('[user-login] validateUser result:', user ? 'found' : 'null');
   if (!user) return json({ error: 'Usuario o contraseña incorrectos' }, { status: 401 });
 
   const token = createUserSession(user.id, user.username);

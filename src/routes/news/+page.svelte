@@ -15,12 +15,6 @@
       : data.news.filter((n: { category: string }) => n.category === activeFilter)
   );
 
-  function formatDate(d: string | Date) {
-    return new Date(d).toLocaleDateString('es', {
-      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-    });
-  }
-
   function timeAgo(d: string | Date) {
     const diff = Date.now() - new Date(d).getTime();
     const mins  = Math.floor(diff / 60000);
@@ -76,34 +70,30 @@
       <a href="/" class="inline-block mt-4 text-sm text-poke-accent hover:underline">Volver al inicio</a>
     </div>
   {:else}
-    <div class="space-y-6">
+    <div class="space-y-3">
       {#each filtered as item, i}
         {@const cat = CATEGORIES[item.category] ?? CATEGORIES.general}
-        <article class="card group {i === 0 ? 'border-poke-accent/30 bg-gradient-to-br from-poke-surface to-poke-surface2' : ''}">
-          <!-- Top row -->
-          <div class="flex items-start justify-between gap-3 mb-4">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs font-semibold px-2.5 py-1 rounded-full border {cat.color}">
-                {cat.label}
-              </span>
+        {@const excerpt = item.content.replace(/^##+ /gm, '').split('\n').find((l: string) => l.trim()) ?? ''}
+        <a href="/news/{item.id}" class="card group flex items-start justify-between gap-4
+          hover:border-poke-accent/40 transition-colors
+          {i === 0 ? 'border-poke-accent/30' : ''}">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full border {cat.color}">{cat.label}</span>
               {#if i === 0}
-                <span class="text-xs font-semibold px-2.5 py-1 rounded-full border bg-poke-accent/10 text-poke-accent border-poke-accent/30">
-                  Último
-                </span>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full border bg-poke-accent/10 text-poke-accent border-poke-accent/30">Último</span>
               {/if}
             </div>
-            <div class="flex-shrink-0 text-right">
-              <div class="text-xs text-gray-500">{timeAgo(item.createdAt)}</div>
-              <div class="text-xs text-gray-600 capitalize mt-0.5">{formatDate(item.createdAt)}</div>
-            </div>
+            <h2 class="font-bold text-white group-hover:text-poke-accent transition-colors leading-snug">{item.title}</h2>
+            {#if excerpt}
+              <p class="text-sm text-gray-500 mt-1 line-clamp-1">{excerpt}</p>
+            {/if}
           </div>
-
-          <!-- Title -->
-          <h2 class="text-xl font-bold text-white mb-3 leading-snug">{item.title}</h2>
-
-          <!-- Content -->
-          <p class="text-gray-300 leading-relaxed whitespace-pre-line">{item.content}</p>
-        </article>
+          <div class="flex-shrink-0 text-right">
+            <div class="text-xs text-gray-500 whitespace-nowrap">{timeAgo(item.createdAt)}</div>
+            <div class="text-xs text-poke-accent mt-1 group-hover:underline">Leer más →</div>
+          </div>
+        </a>
       {/each}
     </div>
   {/if}
