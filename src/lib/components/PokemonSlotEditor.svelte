@@ -16,8 +16,13 @@
   let searchQuery = $state(pokemon.pokemonName);
   let searching = $state(false);
   let availableAbilities = $state<string[]>([]);
+  let availableMoves = $state<string[]>([]);
   let searchError = $state('');
   let debounceTimer: ReturnType<typeof setTimeout>;
+
+  // Per-move filter queries
+  let moveQueries = $state(['', '', '', '']);
+  let moveOpen = $state([false, false, false, false]);
 
   const spriteUrl = (id: number) =>
     `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
@@ -48,6 +53,7 @@
       if (!pokemon.ability || !availableAbilities.includes(pokemon.ability)) {
         pokemon.ability = availableAbilities[0] ?? '';
       }
+      availableMoves = data.moves.map((m: { move: { name: string } }) => m.move.name).sort();
     } catch {
       searchError = 'Error al conectar con PokeAPI';
     } finally {
@@ -55,16 +61,42 @@
     }
   }
 
-  // Sync internal state when bound pokemon changes externally (e.g. clear button)
   $effect(() => {
     searchQuery = pokemon.pokemonName;
+    moveQueries = [pokemon.move1 ?? '', pokemon.move2 ?? '', pokemon.move3 ?? '', pokemon.move4 ?? ''];
     if (!pokemon.pokemonId) {
       availableAbilities = [];
+      availableMoves = [];
       searchError = '';
     } else if (availableAbilities.length === 0) {
       fetchPokemon(pokemon.pokemonName);
     }
   });
+
+  const moveKeys = ['move1', 'move2', 'move3', 'move4'] as const;
+
+  function filteredMoves(idx: number) {
+    const q = moveQueries[idx].toLowerCase();
+    if (!q) return availableMoves.slice(0, 50);
+    return availableMoves.filter(m => m.includes(q)).slice(0, 50);
+  }
+
+  function selectMove(idx: number, move: string) {
+    (pokemon as Record<string, unknown>)[moveKeys[idx]] = move;
+    moveQueries[idx] = move;
+    moveOpen[idx] = false;
+  }
+
+  function onMoveInput(idx: number, val: string) {
+    moveQueries[idx] = val;
+    (pokemon as Record<string, unknown>)[moveKeys[idx]] = val;
+    moveOpen[idx] = true;
+  }
+
+  function initMoveQuery(idx: number) {
+    const val = (pokemon as Record<string, unknown>)[moveKeys[idx]] as string;
+    if (moveQueries[idx] === '' && val) moveQueries[idx] = val;
+  }
 </script>
 
 <div class="card bg-poke-surface2 space-y-4">
@@ -151,15 +183,44 @@
 
   <!-- Moves -->
   <div class="grid grid-cols-2 gap-2">
-    {#each [['move1','Mov. 1'], ['move2','Mov. 2'], ['move3','Mov. 3'], ['move4','Mov. 4']] as [key, lbl]}
+    {#each moveKeys as key, idx}
       <div>
-        <label class="label">{lbl}</label>
-        <input
-          type="text"
-          class="input text-sm"
-          placeholder="ej: Flamethrower"
-          bind:value={pokemon[key as keyof typeof pokemon] as string}
-        />
+        <label class="label">Mov. {idx + 1}</label>
+        {#if availableMoves.length > 0}
+          <div class="relative">
+            <input
+              type="text"
+              class="input text-sm capitalize"
+              placeholder="buscar movimiento..."
+              value={moveQueries[idx] || (pokemon[key] ?? '')}
+              onfocus={() => { initMoveQuery(idx); moveOpen[idx] = true; }}
+              oninput={(e) => onMoveInput(idx, e.currentTarget.value)}
+              onblur={() => setTimeout(() => { moveOpen[idx] = false; }, 150)}
+            />
+            {#if moveOpen[idx] && filteredMoves(idx).length > 0}
+              <ul class="absolute z-20 left-0 right-0 mt-1 max-h-44 overflow-y-auto bg-poke-surface border border-poke-border rounded-lg shadow-xl text-sm">
+                {#each filteredMoves(idx) as move}
+                  <li>
+                    <button
+                      type="button"
+                      class="w-full text-left px-3 py-1.5 capitalize hover:bg-poke-surface2 transition-colors text-gray-300"
+                      onmousedown={() => selectMove(idx, move)}
+                    >
+                      {move.replace(/-/g, ' ')}
+                    </button>
+                  </li>
+                {/each}
+              </ul>
+            {/if}
+          </div>
+        {:else}
+          <input
+            type="text"
+            class="input text-sm"
+            placeholder="ej: Flamethrower"
+            bind:value={pokemon[key] as string}
+          />
+        {/if}
       </div>
     {/each}
   </div>
