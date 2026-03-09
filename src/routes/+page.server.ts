@@ -18,8 +18,8 @@ export const load: PageServerLoad = async () => {
       orderBy: { scheduledAt: 'asc' },
       take: 20,
       include: {
-        player1: true,
-        player2: true,
+        user1: { select: { id: true, username: true } },
+        user2: { select: { id: true, username: true } },
         tournament: { select: { id: true, name: true } },
       },
     }),

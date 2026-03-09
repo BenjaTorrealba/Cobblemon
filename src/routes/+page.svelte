@@ -226,9 +226,9 @@
                   <div class="flex items-center gap-4">
                     <span class="text-sm font-mono text-gray-500 w-12">{formatTime(match.scheduledAt)}</span>
                     <div class="flex items-center gap-3">
-                      <span class="font-semibold text-white">{match.player1.name}</span>
+                      <span class="font-semibold text-white">@{match.user1.username}</span>
                       <span class="text-xs text-gray-500 font-bold">VS</span>
-                      <span class="font-semibold text-white">{match.player2.name}</span>
+                      <span class="font-semibold text-white">@{match.user2.username}</span>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">

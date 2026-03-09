@@ -107,6 +107,36 @@
   const availablePlayers = $derived(
     data.players.filter(p => !playersInTournament.some(tp => tp.player.id === p.id))
   );
+
+  // User entries (inscriptions) modal
+  let showEntriesModal = $state<typeof data.tournaments[0] | null>(null);
+  let userEntries = $state<{ id: number; changesAllowed: boolean; user: { username: string }; registeredTeam: { name: string; pokemons: { slot: number; pokemonName: string; pokemonId: number }[] } | null }[]>([]);
+  let togglingEntry = $state<number | null>(null);
+
+  async function openEntries(t: typeof data.tournaments[0]) {
+    showEntriesModal = t;
+    await refreshEntries(t.id);
+  }
+
+  async function refreshEntries(tournamentId: number) {
+    const res = await fetch(`/api/tournaments/${tournamentId}/entries`);
+    if (res.ok) userEntries = await res.json();
+  }
+
+  async function toggleChanges(entry: { id: number; changesAllowed: boolean }) {
+    if (!showEntriesModal) return;
+    togglingEntry = entry.id;
+    const res = await fetch(`/api/tournaments/${showEntriesModal.id}/register`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entryId: entry.id, changesAllowed: !entry.changesAllowed }),
+    });
+    if (res.ok) await refreshEntries(showEntriesModal.id);
+    togglingEntry = null;
+  }
+
+  const spriteUrl = (id: number) =>
+    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 </script>
 
 <svelte:head>
@@ -142,6 +172,9 @@
             </div>
           </div>
           <div class="flex items-center gap-2 flex-wrap">
+            <button onclick={() => openEntries(tournament)} class="btn-secondary text-xs py-1.5 px-3">
+              📋 Inscripciones
+            </button>
             <button onclick={() => openPlayers(tournament)} class="btn-secondary text-xs py-1.5 px-3">
               👥 Jugadores
             </button>
@@ -202,6 +235,63 @@
         <button onclick={saveTournament} class="btn-primary">
           {editingTournament ? 'Guardar cambios' : 'Crear torneo'}
         </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- User Entries (Inscriptions) Modal -->
+{#if showEntriesModal}
+  <div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-poke-surface border border-poke-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-poke-border flex items-center justify-between">
+        <h3 class="text-lg font-bold text-white">📋 Inscripciones — {showEntriesModal.name}</h3>
+        <button onclick={() => { showEntriesModal = null; }} class="text-gray-500 hover:text-gray-300 text-xl leading-none">&times;</button>
+      </div>
+      <div class="p-6">
+        {#if userEntries.length === 0}
+          <p class="text-sm text-gray-500 italic text-center py-8">Ningún usuario se ha inscrito aún.</p>
+        {:else}
+          <div class="space-y-4">
+            {#each userEntries as entry}
+              <div class="rounded-xl border border-poke-border bg-poke-surface2 p-4">
+                <div class="flex items-center justify-between gap-3 mb-3">
+                  <div>
+                    <span class="font-semibold text-white">@{entry.user.username}</span>
+                    {#if entry.registeredTeam}
+                      <span class="text-xs text-gray-500 ml-2">{entry.registeredTeam.name}</span>
+                    {/if}
+                  </div>
+                  <button
+                    onclick={() => toggleChanges(entry)}
+                    disabled={togglingEntry === entry.id}
+                    class="text-xs px-3 py-1.5 rounded-lg border transition-colors flex-shrink-0
+                      {entry.changesAllowed
+                        ? 'border-emerald-700/50 text-emerald-400 bg-emerald-900/20 hover:bg-emerald-900/40'
+                        : 'border-poke-accent/50 text-poke-accent hover:bg-poke-accent/10'}">
+                    {entry.changesAllowed ? '🔓 Cambio habilitado' : '🔒 Habilitar cambio'}
+                  </button>
+                </div>
+                {#if entry.registeredTeam?.pokemons?.length}
+                  <div class="flex gap-2 flex-wrap">
+                    {#each entry.registeredTeam.pokemons as p}
+                      <div class="flex flex-col items-center">
+                        <img
+                          src={spriteUrl(p.pokemonId)}
+                          alt={p.pokemonName}
+                          class="w-10 h-10 object-contain"
+                        />
+                        <span class="text-xs text-gray-500 capitalize mt-0.5">#{p.slot}</span>
+                      </div>
+                    {/each}
+                  </div>
+                {:else}
+                  <p class="text-xs text-gray-600">Sin equipo registrado.</p>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        {/if}
       </div>
     </div>
   </div>

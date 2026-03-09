@@ -16,9 +16,9 @@ export const GET: RequestHandler = async ({ url }) => {
   const matches = await prisma.match.findMany({
     where,
     include: {
-      player1: true,
-      player2: true,
-      winner: true,
+      user1: { select: { id: true, username: true } },
+      user2: { select: { id: true, username: true } },
+      winner: { select: { id: true, username: true } },
       tournament: { select: { id: true, name: true } },
     },
     orderBy: { scheduledAt: 'asc' },
@@ -31,27 +31,27 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   if (!locals.admin) return json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await request.json();
-  const { tournamentId, player1Id, player2Id, scheduledAt } = body;
+  const { tournamentId, user1Id, user2Id, scheduledAt } = body;
 
-  if (!tournamentId || !player1Id || !player2Id || !scheduledAt) {
+  if (!tournamentId || !user1Id || !user2Id || !scheduledAt) {
     return json({ error: 'Missing required fields' }, { status: 400 });
   }
 
-  if (Number(player1Id) === Number(player2Id)) {
-    return json({ error: 'Players must be different' }, { status: 400 });
+  if (Number(user1Id) === Number(user2Id)) {
+    return json({ error: 'Los usuarios deben ser distintos' }, { status: 400 });
   }
 
   const match = await prisma.match.create({
     data: {
       tournamentId: Number(tournamentId),
-      player1Id: Number(player1Id),
-      player2Id: Number(player2Id),
+      user1Id: Number(user1Id),
+      user2Id: Number(user2Id),
       scheduledAt: new Date(scheduledAt),
       status: 'scheduled',
     },
     include: {
-      player1: true,
-      player2: true,
+      user1: { select: { id: true, username: true } },
+      user2: { select: { id: true, username: true } },
       tournament: { select: { id: true, name: true } },
     },
   });

@@ -12,21 +12,40 @@
   // Create form
   let createForm = $state({
     tournamentId: '',
-    player1Id: '',
-    player2Id: '',
+    user1Id: '',
+    user2Id: '',
     scheduledDate: '',
     scheduledTime: '',
   });
   let createError = $state('');
 
+  // Users available for the selected tournament (registered entries), or all users
+  let tournamentUsers = $state<{ id: number; username: string }[]>(data.users);
+
+  async function onTournamentChange() {
+    if (!createForm.tournamentId) {
+      tournamentUsers = data.users;
+      return;
+    }
+    const res = await fetch(`/api/tournaments/${createForm.tournamentId}/entries`);
+    if (res.ok) {
+      const entries = await res.json();
+      tournamentUsers = entries.map((e: { user: { id: number; username: string } }) => e.user);
+    } else {
+      tournamentUsers = data.users;
+    }
+    createForm.user1Id = '';
+    createForm.user2Id = '';
+  }
+
   async function createMatch() {
     createError = '';
-    const { tournamentId, player1Id, player2Id, scheduledDate, scheduledTime } = createForm;
-    if (!tournamentId || !player1Id || !player2Id || !scheduledDate || !scheduledTime) {
+    const { tournamentId, user1Id, user2Id, scheduledDate, scheduledTime } = createForm;
+    if (!tournamentId || !user1Id || !user2Id || !scheduledDate || !scheduledTime) {
       createError = 'Todos los campos son obligatorios.';
       return;
     }
-    if (player1Id === player2Id) {
+    if (user1Id === user2Id) {
       createError = 'Los jugadores deben ser distintos.';
       return;
     }
@@ -38,15 +57,16 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         tournamentId: Number(tournamentId),
-        player1Id: Number(player1Id),
-        player2Id: Number(player2Id),
+        user1Id: Number(user1Id),
+        user2Id: Number(user2Id),
         scheduledAt,
       }),
     });
 
     if (res.ok) {
       showCreateModal = false;
-      createForm = { tournamentId: '', player1Id: '', player2Id: '', scheduledDate: '', scheduledTime: '' };
+      createForm = { tournamentId: '', user1Id: '', user2Id: '', scheduledDate: '', scheduledTime: '' };
+      tournamentUsers = data.users;
       invalidateAll();
     } else {
       const d = await res.json();
@@ -84,14 +104,6 @@
       ? data.matches.filter((m: { tournament: { id: number } }) => m.tournament.id === Number(filterTournament))
       : data.matches
   );
-
-  // Players in selected tournament for create form
-  const tournamentPlayers = $derived(async () => {
-    if (!createForm.tournamentId) return data.players;
-    const res = await fetch(`/api/tournaments/${createForm.tournamentId}`);
-    const t = await res.json();
-    return t.players?.map((tp: { player: typeof data.players[0] }) => tp.player) ?? data.players;
-  });
 </script>
 
 <svelte:head>
@@ -108,7 +120,7 @@
           <option value={t.id}>{t.name}</option>
         {/each}
       </select>
-      <button onclick={() => { showCreateModal = true; createError = ''; }} class="btn-primary">
+      <button onclick={() => { showCreateModal = true; createError = ''; tournamentUsers = data.users; createForm = { tournamentId: '', user1Id: '', user2Id: '', scheduledDate: '', scheduledTime: '' }; }} class="btn-primary">
         + Nuevo Combate
       </button>
     </div>
@@ -125,9 +137,9 @@
               {formatDateTime(match.scheduledAt)}
             </div>
             <div class="flex items-center gap-3 min-w-0">
-              <span class="font-semibold text-white truncate {match.winner?.id === match.player1.id ? 'text-emerald-400' : ''}">{match.player1.name}</span>
+              <span class="font-semibold truncate {match.winner?.id === match.user1.id ? 'text-emerald-400' : 'text-white'}">@{match.user1.username}</span>
               <span class="text-xs font-bold text-gray-500 flex-shrink-0">VS</span>
-              <span class="font-semibold text-white truncate {match.winner?.id === match.player2.id ? 'text-emerald-400' : ''}">{match.player2.name}</span>
+              <span class="font-semibold truncate {match.winner?.id === match.user2.id ? 'text-emerald-400' : 'text-white'}">@{match.user2.username}</span>
             </div>
             <span class="text-xs text-gray-500 hidden lg:block">{match.tournament.name}</span>
           </div>
@@ -165,29 +177,34 @@
         {/if}
         <div>
           <label class="label" for="m-tournament">Torneo</label>
-          <select id="m-tournament" bind:value={createForm.tournamentId} class="input">
+          <select id="m-tournament" bind:value={createForm.tournamentId} onchange={onTournamentChange} class="input">
             <option value="">Seleccionar torneo...</option>
             {#each data.tournaments as t}
               <option value={t.id}>{t.name}</option>
             {/each}
           </select>
+          {#if createForm.tournamentId && tournamentUsers.length === 0}
+            <p class="text-xs text-amber-500 mt-1">⚠ Ningún usuario inscrito en este torneo aún.</p>
+          {:else if createForm.tournamentId}
+            <p class="text-xs text-gray-600 mt-1">{tournamentUsers.length} usuarios inscritos.</p>
+          {/if}
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="label" for="m-p1">Jugador 1</label>
-            <select id="m-p1" bind:value={createForm.player1Id} class="input">
+            <label class="label" for="m-u1">Jugador 1</label>
+            <select id="m-u1" bind:value={createForm.user1Id} class="input">
               <option value="">Seleccionar...</option>
-              {#each data.players as p}
-                <option value={p.id}>{p.name}</option>
+              {#each tournamentUsers as u}
+                <option value={u.id}>@{u.username}</option>
               {/each}
             </select>
           </div>
           <div>
-            <label class="label" for="m-p2">Jugador 2</label>
-            <select id="m-p2" bind:value={createForm.player2Id} class="input">
+            <label class="label" for="m-u2">Jugador 2</label>
+            <select id="m-u2" bind:value={createForm.user2Id} class="input">
               <option value="">Seleccionar...</option>
-              {#each data.players as p}
-                <option value={p.id}>{p.name}</option>
+              {#each tournamentUsers as u}
+                <option value={u.id}>@{u.username}</option>
               {/each}
             </select>
           </div>
@@ -218,21 +235,21 @@
       <div class="p-6 border-b border-poke-border">
         <h3 class="text-lg font-bold text-white">Marcar Ganador</h3>
         <p class="text-sm text-gray-500 mt-1">
-          {winnerModal.player1.name} vs {winnerModal.player2.name}
+          @{winnerModal.user1.username} vs @{winnerModal.user2.username}
         </p>
       </div>
       <div class="p-6 space-y-3">
         <button
-          onclick={() => selectedWinnerId = String(winnerModal!.player1.id)}
-          class="w-full py-4 rounded-xl border-2 font-bold transition-all duration-150 text-left px-5 {selectedWinnerId === String(winnerModal.player1.id) ? 'border-emerald-500 bg-emerald-900/30 text-emerald-300' : 'border-poke-border bg-poke-surface2 text-gray-300 hover:border-poke-accent/50'}"
+          onclick={() => selectedWinnerId = String(winnerModal!.user1.id)}
+          class="w-full py-4 rounded-xl border-2 font-bold transition-all duration-150 text-left px-5 {selectedWinnerId === String(winnerModal.user1.id) ? 'border-emerald-500 bg-emerald-900/30 text-emerald-300' : 'border-poke-border bg-poke-surface2 text-gray-300 hover:border-poke-accent/50'}"
         >
-          🏆 {winnerModal.player1.name}
+          🏆 @{winnerModal.user1.username}
         </button>
         <button
-          onclick={() => selectedWinnerId = String(winnerModal!.player2.id)}
-          class="w-full py-4 rounded-xl border-2 font-bold transition-all duration-150 text-left px-5 {selectedWinnerId === String(winnerModal.player2.id) ? 'border-emerald-500 bg-emerald-900/30 text-emerald-300' : 'border-poke-border bg-poke-surface2 text-gray-300 hover:border-poke-accent/50'}"
+          onclick={() => selectedWinnerId = String(winnerModal!.user2.id)}
+          class="w-full py-4 rounded-xl border-2 font-bold transition-all duration-150 text-left px-5 {selectedWinnerId === String(winnerModal.user2.id) ? 'border-emerald-500 bg-emerald-900/30 text-emerald-300' : 'border-poke-border bg-poke-surface2 text-gray-300 hover:border-poke-accent/50'}"
         >
-          🏆 {winnerModal.player2.name}
+          🏆 @{winnerModal.user2.username}
         </button>
       </div>
       <div class="p-6 border-t border-poke-border flex gap-3 justify-end">

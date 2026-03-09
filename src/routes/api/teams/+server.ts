@@ -54,6 +54,7 @@ export const PUT: RequestHandler = async ({ request, locals }) => {
           slot: Number(p.slot),
           pokemonName: String(p.pokemonName),
           pokemonId: Number(p.pokemonId || 0),
+          shiny: Boolean(p.shiny ?? false),
           item: String(p.item || ''),
           ability: String(p.ability || ''),
           move1: String(p.move1 || ''),

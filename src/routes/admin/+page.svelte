@@ -52,9 +52,9 @@
         {#each recentMatches as match}
           <div class="card py-3 flex items-center justify-between">
             <div class="text-sm text-gray-300">
-              <span class="font-semibold">{match.player1.name}</span>
+              <span class="font-semibold">@{match.user1.username}</span>
               <span class="text-gray-600 mx-2">vs</span>
-              <span class="font-semibold">{match.player2.name}</span>
+              <span class="font-semibold">@{match.user2.username}</span>
               <span class="text-gray-500 ml-2">&mdash; {match.tournament.name}</span>
             </div>
             <span class={match.status === 'completed' ? 'badge-completed' : 'badge-scheduled'}>

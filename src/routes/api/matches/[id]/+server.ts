@@ -20,9 +20,9 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
     where: { id },
     data,
     include: {
-      player1: true,
-      player2: true,
-      winner: true,
+      user1: { select: { id: true, username: true } },
+      user2: { select: { id: true, username: true } },
+      winner: { select: { id: true, username: true } },
     },
   });
 

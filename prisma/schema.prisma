@@ -30,6 +30,7 @@ model Tournament {
 
   players     TournamentPlayer[]
   matches     Match[]
+  userEntries UserTournamentEntry[]
 }
 
 model Player {
@@ -38,9 +39,6 @@ model Player {
   createdAt DateTime @default(now())
 
   tournaments TournamentPlayer[]
-  matchesAsPlayer1 Match[] @relation("Player1Matches")
-  matchesAsPlayer2 Match[] @relation("Player2Matches")
-  wonMatches       Match[] @relation("WonMatches")
 }
 
 model TournamentPlayer {
@@ -64,19 +62,19 @@ model News {
 }
 
 model Match {
-  id           Int      @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId Int
-  player1      Player   @relation("Player1Matches", fields: [player1Id], references: [id])
-  player1Id    Int
-  player2      Player   @relation("Player2Matches", fields: [player2Id], references: [id])
-  player2Id    Int
+  user1        User       @relation("User1Matches", fields: [user1Id], references: [id])
+  user1Id      Int
+  user2        User       @relation("User2Matches", fields: [user2Id], references: [id])
+  user2Id      Int
   scheduledAt  DateTime
-  status       String   @default("scheduled") // scheduled | completed
-  winner       Player?  @relation("WonMatches", fields: [winnerId], references: [id])
+  status       String     @default("scheduled") // scheduled | completed
+  winner       User?      @relation("WonMatches", fields: [winnerId], references: [id])
   winnerId     Int?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model User {
@@ -84,7 +82,11 @@ model User {
   username     String   @unique
   passwordHash String
   createdAt    DateTime @default(now())
-  teams        Team[]
+  teams              Team[]
+  tournamentEntries  UserTournamentEntry[]
+  matchesAsUser1     Match[] @relation("User1Matches")
+  matchesAsUser2     Match[] @relation("User2Matches")
+  wonMatches         Match[] @relation("WonMatches")
 }
 
 model Team {
@@ -105,6 +107,7 @@ model TeamPokemon {
   slot        Int
   pokemonName String
   pokemonId   Int
+  shiny       Boolean @default(false)
   item        String @default("")
   ability     String @default("")
   move1       String @default("")
@@ -118,4 +121,45 @@ model TeamPokemon {
 model SiteSettings {
   id               Int    @id @default(1)
   registrationCode String @default("")
+}
+
+model UserTournamentEntry {
+  id             Int             @id @default(autoincrement())
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int
+  tournament     Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId   Int
+  registeredAt   DateTime        @default(now())
+  changesAllowed Boolean         @default(false)
+  registeredTeam RegisteredTeam?
+
+  @@unique([userId, tournamentId])
+}
+
+model RegisteredTeam {
+  id          Int                    @id @default(autoincrement())
+  entry       UserTournamentEntry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  entryId     Int                    @unique
+  name        String
+  description String                 @default("")
+  lockedAt    DateTime               @default(now())
+  pokemons    RegisteredTeamPokemon[]
+}
+
+model RegisteredTeamPokemon {
+  id          Int            @id @default(autoincrement())
+  team        RegisteredTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId      Int
+  slot        Int
+  pokemonName String
+  pokemonId   Int
+  shiny       Boolean @default(false)
+  item        String @default("")
+  ability     String @default("")
+  move1       String @default("")
+  move2       String @default("")
+  move3       String @default("")
+  move4       String @default("")
+
+  @@unique([teamId, slot])
 }

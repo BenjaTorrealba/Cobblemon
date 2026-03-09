@@ -8,6 +8,7 @@
     slot: number;
     pokemonName: string;
     pokemonId: number;
+    shiny: boolean;
     item: string;
     ability: string;
     move1: string;
@@ -25,7 +26,7 @@
   }
 
   function makeEmptySlot(num: number): PokemonSlot {
-    return { slot: num, pokemonName: '', pokemonId: 0, item: '', ability: '', move1: '', move2: '', move3: '', move4: '' };
+    return { slot: num, pokemonName: '', pokemonId: 0, shiny: false, item: '', ability: '', move1: '', move2: '', move3: '', move4: '' };
   }
 
   // View state
@@ -141,6 +142,129 @@
 
   const spriteUrl = (id: number) =>
     `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+
+  // ── Showdown import / export ──────────────────────────────────────────────
+  let showdownModal = $state<'import' | 'export' | null>(null);
+  let showdownText = $state('');
+  let importing = $state(false);
+  let importError = $state('');
+  let importStatus = $state('');
+
+  function exportShowdown() {
+    showdownText = pokemons
+      .filter(p => p.pokemonName)
+      .map(p => {
+        const lines: string[] = [];
+        lines.push(p.item ? `${p.pokemonName} @ ${p.item}` : p.pokemonName);
+        if (p.ability) lines.push(`Ability: ${p.ability}`);
+        [p.move1, p.move2, p.move3, p.move4].filter(Boolean).forEach(m => lines.push(`- ${m}`));
+        return lines.join('\n');
+      })
+      .join('\n\n');
+    showdownModal = 'export';
+  }
+
+  function openImport() {
+    showdownText = '';
+    importError = '';
+    importStatus = '';
+    showdownModal = 'import';
+  }
+
+  function parseShowdownBlock(block: string) {
+    const lines = block.trim().split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) return null;
+
+    let nameLine = lines[0];
+    let item = '';
+
+    const atIdx = nameLine.lastIndexOf(' @ ');
+    if (atIdx !== -1) {
+      item = nameLine.slice(atIdx + 3).trim().toLowerCase().replace(/ /g, '-').replace(/[\[\]]/g, '');
+      nameLine = nameLine.slice(0, atIdx).trim();
+    }
+
+    // Handle "Nickname (Species)" or "Species (M)" gender markers
+    const parenMatch = nameLine.match(/\(([^MF][^)]+)\)\s*$/);
+    let pokemonName = parenMatch
+      ? parenMatch[1].trim()
+      : nameLine.replace(/\s*\([MF]\)\s*$/, '').trim();
+
+    pokemonName = pokemonName.toLowerCase().replace(/ /g, '-');
+
+    let ability = '';
+    const moves: string[] = [];
+
+    for (const line of lines.slice(1)) {
+      if (/^ability:/i.test(line)) {
+        ability = line.replace(/^ability:/i, '').trim().toLowerCase().replace(/ /g, '-');
+      } else if (line.startsWith('- ')) {
+        const move = line.slice(2).trim().toLowerCase()
+          .replace(/\s*\[[^\]]*\]/g, m => m.replace(/[\[\] ]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''))
+          .replace(/ /g, '-');
+        moves.push(move);
+      }
+    }
+
+    return { pokemonName, item, ability, moves };
+  }
+
+  async function importShowdown() {
+    importing = true;
+    importError = '';
+    importStatus = '';
+    try {
+      const blocks = showdownText.trim().split(/\n[ \t]*\n/).filter(b => b.trim());
+      const parsed = blocks.slice(0, 6).map(parseShowdownBlock).filter(Boolean) as NonNullable<ReturnType<typeof parseShowdownBlock>>[];
+
+      if (parsed.length === 0) {
+        importError = 'No se encontraron Pokémon válidos. Revisa el formato.';
+        return;
+      }
+
+      importStatus = `Cargando datos de ${parsed.length} Pokémon desde PokéAPI...`;
+
+      const newSlots = await Promise.all(
+        parsed.map(async (p, i) => {
+          let pokemonId = 0;
+          try {
+            const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${p.pokemonName}`);
+            if (res.ok) {
+              const apiData = await res.json();
+              pokemonId = apiData.id;
+            }
+          } catch { /* ignore network issues */ }
+          return {
+            slot: i + 1,
+            pokemonName: p.pokemonName,
+            pokemonId,
+            item: p.item,
+            ability: p.ability,
+            move1: p.moves[0] ?? '',
+            move2: p.moves[1] ?? '',
+            move3: p.moves[2] ?? '',
+            move4: p.moves[3] ?? '',
+          };
+        })
+      );
+
+      pokemons = Array.from({ length: 6 }, (_, i) => newSlots[i] ?? makeEmptySlot(i + 1));
+      showdownModal = null;
+      message = `¡${parsed.length} Pokémon importados desde Showdown!`;
+      messageType = 'success';
+    } catch {
+      importError = 'Error al procesar el texto. Revisa el formato.';
+    } finally {
+      importing = false;
+      importStatus = '';
+    }
+  }
+
+  async function copyExport() {
+    try {
+      await navigator.clipboard.writeText(showdownText);
+    } catch { /* fallback: select all */ }
+  }
 </script>
 
 <svelte:head><title>Mis Equipos &mdash; BenjaVerse</title></svelte:head>
@@ -264,9 +388,15 @@
   </div>
 
   <!-- Action buttons -->
-  <div class="flex items-center gap-3 mb-6">
+  <div class="flex items-center gap-3 mb-6 flex-wrap">
     <button onclick={clearSlots} class="btn-secondary">
       🗑 Limpiar slots
+    </button>
+    <button onclick={openImport} class="btn-secondary">
+      📥 Importar Showdown
+    </button>
+    <button onclick={exportShowdown} class="btn-secondary">
+      📤 Exportar Showdown
     </button>
     <button onclick={saveTeam} disabled={saving} class="btn-primary">
       {#if saving}
@@ -296,3 +426,70 @@
 {/if}
 
 </div>
+
+<!-- Showdown Import / Export Modal -->
+{#if showdownModal}
+  <div class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-poke-surface border border-poke-border rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div class="p-5 border-b border-poke-border flex items-center justify-between">
+        <h3 class="text-lg font-bold text-white">
+          {showdownModal === 'import' ? '📥 Importar desde Pokémon Showdown' : '📤 Exportar para Pokémon Showdown'}
+        </h3>
+        <button onclick={() => showdownModal = null} class="text-gray-500 hover:text-gray-300 text-2xl leading-none">&times;</button>
+      </div>
+
+      <div class="p-5 flex-1 overflow-y-auto space-y-4">
+        {#if showdownModal === 'import'}
+          <p class="text-sm text-gray-400">
+            Pega aquí el texto de exportación de Pokémon Showdown. Puedes importar hasta 6 Pokémon a la vez.
+          </p>
+          <p class="text-xs text-gray-600">
+            Ejemplo: <code class="bg-poke-surface2 px-1.5 py-0.5 rounded text-gray-400">Pikachu @ Light Ball<br/>Ability: Static<br/>- Thunderbolt<br/>- Quick Attack</code>
+          </p>
+        {:else}
+          <p class="text-sm text-gray-400">
+            Copia el texto y pégalo en Pokémon Showdown (Teambuilder → Import).
+          </p>
+        {/if}
+
+        <textarea
+          bind:value={showdownText}
+          readonly={showdownModal === 'export'}
+          rows="14"
+          class="w-full bg-poke-surface2 border border-poke-border rounded-xl px-4 py-3 text-sm text-gray-200 font-mono resize-none focus:outline-none focus:border-poke-accent/50
+            {showdownModal === 'export' ? 'text-gray-400 cursor-text select-all' : ''}"
+          placeholder={showdownModal === 'import' ? 'Pega el equipo aquí...' : ''}
+          spellcheck="false"
+        ></textarea>
+
+        {#if importStatus}
+          <p class="text-sm text-poke-accent animate-pulse">{importStatus}</p>
+        {/if}
+        {#if importError}
+          <div class="rounded-lg px-3 py-2 text-sm bg-red-900/30 border border-red-700/50 text-red-400">
+            {importError}
+          </div>
+        {/if}
+      </div>
+
+      <div class="p-5 border-t border-poke-border flex gap-3 justify-end">
+        <button onclick={() => showdownModal = null} class="btn-secondary">Cancelar</button>
+        {#if showdownModal === 'export'}
+          <button onclick={copyExport} class="btn-primary">
+            📋 Copiar texto
+          </button>
+        {:else}
+          <button onclick={importShowdown} disabled={importing || !showdownText.trim()} class="btn-primary">
+            {#if importing}
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            {/if}
+            Importar equipo
+          </button>
+        {/if}
+      </div>
+    </div>
+  </div>
+{/if}

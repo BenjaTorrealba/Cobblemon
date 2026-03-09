@@ -3,6 +3,7 @@
     slot: number;
     pokemonName: string;
     pokemonId: number;
+    shiny: boolean;
     item: string;
     ability: string;
     move1: string;
@@ -24,8 +25,10 @@
   let moveQueries = $state(['', '', '', '']);
   let moveOpen = $state([false, false, false, false]);
 
-  const spriteUrl = (id: number) =>
-    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+  const spriteUrl = (id: number, shiny: boolean) =>
+    shiny
+      ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${id}.png`
+      : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 
   const itemSlug = $derived(pokemon.item?.trim().toLowerCase().replace(/ /g, '-') ?? '');
 
@@ -101,16 +104,32 @@
 
 <div class="card bg-poke-surface2 space-y-4">
   <div class="flex items-start gap-4">
-    <!-- Sprite -->
-    <div class="w-20 h-20 flex-shrink-0 bg-poke-surface rounded-xl border border-poke-border flex items-center justify-center overflow-hidden">
+      <!-- Sprite -->
+    <div class="relative w-20 h-20 flex-shrink-0">
+      <div class="w-20 h-20 bg-poke-surface rounded-xl border border-poke-border flex items-center justify-center overflow-hidden
+        {pokemon.shiny ? 'border-poke-gold/60 bg-poke-gold/5' : ''}">
+        {#if pokemon.pokemonId}
+          {#key `${pokemon.pokemonId}-${pokemon.shiny}`}
+            <img
+              src={spriteUrl(pokemon.pokemonId, pokemon.shiny ?? false)}
+              alt={pokemon.pokemonName}
+              class="w-full h-full object-contain p-1"
+            />
+          {/key}
+        {:else}
+          <span class="text-4xl opacity-20">?</span>
+        {/if}
+      </div>
       {#if pokemon.pokemonId}
-        <img
-          src={spriteUrl(pokemon.pokemonId)}
-          alt={pokemon.pokemonName}
-          class="w-full h-full object-contain p-1"
-        />
-      {:else}
-        <span class="text-4xl opacity-20">?</span>
+        <button
+          type="button"
+          title={pokemon.shiny ? 'Shiny activado' : 'Activar shiny'}
+          onclick={() => pokemon.shiny = !pokemon.shiny}
+          class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border text-xs flex items-center justify-center transition-colors
+            {pokemon.shiny ? 'bg-poke-gold border-poke-gold text-black' : 'bg-poke-surface border-poke-border text-gray-500 hover:border-poke-gold hover:text-poke-gold'}"
+        >
+          ✨
+        </button>
       {/if}
     </div>
 
