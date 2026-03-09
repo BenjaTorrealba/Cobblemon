@@ -57,6 +57,13 @@
     }
   }
 
+  function clearTeam() {
+    pokemons = Array.from({ length: 6 }, (_, i) => makeEmptySlot(i + 1));
+    teamName = 'Mi Equipo';
+    teamDesc = '';
+    message = '';
+  }
+
   async function togglePublish() {
     published = !published;
     const res = await fetch('/api/teams', {
@@ -131,6 +138,9 @@
     </div>
   {/if}
 
+  <button onclick={clearTeam} class="btn-secondary mr-3">
+    🗑 Limpiar equipo
+  </button>
   <button onclick={saveTeam} disabled={saving} class="btn-primary">
     {#if saving}
       <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">

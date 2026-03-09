@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto, invalidateAll } from '$app/navigation';
 
   let username = $state('');
   let password = $state('');
@@ -18,6 +18,7 @@
         body: JSON.stringify({ username, password, code }),
       });
       if (res.ok) {
+        await invalidateAll();
         goto('/my-team');
       } else {
         const d = await res.json();

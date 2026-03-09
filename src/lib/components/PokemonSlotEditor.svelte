@@ -53,9 +53,13 @@
     }
   }
 
-  // Load abilities if pokemon is pre-set (edit mode)
+  // Sync internal state when bound pokemon changes externally (e.g. clear button)
   $effect(() => {
-    if (pokemon.pokemonName && pokemon.pokemonId && availableAbilities.length === 0) {
+    searchQuery = pokemon.pokemonName;
+    if (!pokemon.pokemonId) {
+      availableAbilities = [];
+      searchError = '';
+    } else if (availableAbilities.length === 0) {
       fetchPokemon(pokemon.pokemonName);
     }
   });
