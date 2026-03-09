@@ -22,6 +22,8 @@
   const spriteUrl = (id: number) =>
     `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 
+  const itemSlug = $derived(pokemon.item?.trim().toLowerCase().replace(/ /g, '-') ?? '');
+
   function debounceSearch(val: string) {
     clearTimeout(debounceTimer);
     if (!val.trim()) return;
@@ -108,7 +110,21 @@
       <!-- Item -->
       <div>
         <label class="label">Objeto</label>
-        <input type="text" class="input" placeholder="Life Orb, Choice Scarf..." bind:value={pokemon.item} />
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 flex-shrink-0">
+            {#if itemSlug}
+              {#key itemSlug}
+                <img
+                  src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${itemSlug}.png`}
+                  alt={pokemon.item}
+                  class="w-8 h-8 object-contain"
+                  onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+                />
+              {/key}
+            {/if}
+          </div>
+          <input type="text" class="input" placeholder="Life Orb, Choice Scarf..." bind:value={pokemon.item} />
+        </div>
       </div>
     </div>
   </div>

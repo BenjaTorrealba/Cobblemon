@@ -40,7 +40,15 @@
                 />
                 <h3 class="font-bold text-white capitalize mt-2">{p.pokemonName}</h3>
                 {#if p.item}
-                  <p class="text-xs text-gray-500 mt-1">Objeto: {p.item}</p>
+                  <div class="flex items-center justify-center gap-1 mt-1">
+                    <img
+                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${p.item.toLowerCase().replace(/ /g, '-')}.png`}
+                      alt={p.item}
+                      class="w-6 h-6 object-contain"
+                      onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+                    />
+                    <span class="text-xs text-gray-500">{p.item}</span>
+                  </div>
                 {/if}
                 {#if p.ability}
                   <p class="text-xs text-poke-accent capitalize mt-0.5">{p.ability.replace(/-/g, ' ')}</p>
