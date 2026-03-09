@@ -3,15 +3,16 @@ import { error } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma.js';
 
 export const load: PageServerLoad = async ({ params }) => {
-  const team = await prisma.team.findFirst({
+  const teams = await prisma.team.findMany({
     where: { user: { username: params.username }, published: true },
     include: {
       user: { select: { username: true } },
       pokemons: { orderBy: { slot: 'asc' } },
     },
+    orderBy: { updatedAt: 'desc' },
   });
 
-  if (!team) error(404, 'Equipo no encontrado o no publicado');
+  if (teams.length === 0) error(404, 'Este jugador no tiene equipos publicados');
 
-  return { team };
+  return { teams, username: params.username };
 };

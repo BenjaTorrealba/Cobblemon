@@ -18,22 +18,30 @@ export const PUT: RequestHandler = async ({ request, locals }) => {
   if (!locals.user) return json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await request.json();
-  const { name, description, pokemons, published } = body;
+  const { id, name, description, pokemons, published } = body;
 
-  const team = await prisma.team.upsert({
-    where: { userId: locals.user.id },
-    update: {
-      name: String(name || 'Mi Equipo'),
-      description: String(description || ''),
-      ...(published !== undefined ? { published: Boolean(published) } : {}),
-    },
-    create: {
-      userId: locals.user.id,
-      name: String(name || 'Mi Equipo'),
-      description: String(description || ''),
-      published: false,
-    },
-  });
+  let team;
+  if (id) {
+    const existing = await prisma.team.findFirst({ where: { id: Number(id), userId: locals.user.id } });
+    if (!existing) return json({ error: 'Not found' }, { status: 404 });
+    team = await prisma.team.update({
+      where: { id: Number(id) },
+      data: {
+        name: String(name || 'Mi Equipo'),
+        description: String(description || ''),
+        ...(published !== undefined ? { published: Boolean(published) } : {}),
+      },
+    });
+  } else {
+    team = await prisma.team.create({
+      data: {
+        userId: locals.user.id,
+        name: String(name || 'Mi Equipo'),
+        description: String(description || ''),
+        published: false,
+      },
+    });
+  }
 
   await prisma.teamPokemon.deleteMany({ where: { teamId: team.id } });
 
@@ -57,5 +65,16 @@ export const PUT: RequestHandler = async ({ request, locals }) => {
     }
   }
 
+  return json({ success: true, id: team.id });
+};
+
+export const DELETE: RequestHandler = async ({ request, locals }) => {
+  if (!locals.user) return json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = await request.json();
+  const team = await prisma.team.findFirst({ where: { id: Number(id), userId: locals.user.id } });
+  if (!team) return json({ error: 'Not found' }, { status: 404 });
+
+  await prisma.team.delete({ where: { id: Number(id) } });
   return json({ success: true });
 };

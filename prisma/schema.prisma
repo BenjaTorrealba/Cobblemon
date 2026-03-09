@@ -84,13 +84,13 @@ model User {
   username     String   @unique
   passwordHash String
   createdAt    DateTime @default(now())
-  team         Team?
+  teams        Team[]
 }
 
 model Team {
   id          Int           @id @default(autoincrement())
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      Int           @unique
+  userId      Int
   name        String        @default("Mi Equipo")
   description String        @default("")
   published   Boolean       @default(false)

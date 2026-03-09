@@ -5,10 +5,11 @@ import { prisma } from '$lib/server/prisma.js';
 export const load: PageServerLoad = async ({ locals }) => {
   if (!locals.user) redirect(302, '/login');
 
-  const team = await prisma.team.findUnique({
+  const teams = await prisma.team.findMany({
     where: { userId: locals.user.id },
     include: { pokemons: { orderBy: { slot: 'asc' } } },
+    orderBy: { updatedAt: 'desc' },
   });
 
-  return { user: locals.user, team };
+  return { user: locals.user, teams };
 };
