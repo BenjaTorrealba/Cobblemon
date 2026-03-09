@@ -135,8 +135,8 @@
         {#each users as user}
           <tr class="border-b border-poke-border/50 hover:bg-poke-surface2/50">
             <td class="py-3 px-2 font-medium text-white">@{user.username}</td>
-            <td class="py-3 px-2 text-gray-400">{user.team ? '✓ Configurado' : '—'}</td>
-            <td class="py-3 px-2 text-gray-400">{user.team?.pokemons?.length ?? 0} / 6</td>
+            <td class="py-3 px-2 text-gray-400">{user.teams?.length > 0 ? '✓ Configurado' : '—'}</td>
+            <td class="py-3 px-2 text-gray-400">{user.teams?.reduce((s: number, t: { pokemons: { id: number }[] }) => s + (t.pokemons?.length ?? 0), 0) ?? 0} pokémon total</td>
             <td class="py-3 px-2 text-right space-x-3">
               <button
                 onclick={() => resetPassword(user.id)}

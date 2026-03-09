@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ locals }) => {
   const [users, settings] = await Promise.all([
     prisma.user.findMany({
       orderBy: { username: 'asc' },
-      include: { team: { select: { updatedAt: true, pokemons: { select: { id: true } } } } },
+      include: { teams: { select: { id: true, updatedAt: true, pokemons: { select: { id: true } } } } },
     }),
     prisma.siteSettings.upsert({
       where: { id: 1 },
