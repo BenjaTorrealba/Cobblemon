@@ -5,12 +5,12 @@
     `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 </script>
 
-<svelte:head><title>Equipos &mdash; Cobbleverse</title></svelte:head>
+<svelte:head><title>Equipos &mdash; BenjaVerse</title></svelte:head>
 
 <div class="max-w-7xl mx-auto px-4 py-12">
   <div class="mb-10">
     <h1 class="text-3xl font-bold text-white mb-2">Equipos</h1>
-    <p class="text-gray-500">Los equipos de todos los jugadores de Cobbleverse.</p>
+    <p class="text-gray-500">Los equipos de todos los jugadores de BenjaVerse.</p>
   </div>
 
   {#if data.teams.length === 0}

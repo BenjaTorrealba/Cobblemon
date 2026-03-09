@@ -95,7 +95,7 @@
 </script>
 
 <svelte:head>
-  <title>Enfrentamientos &mdash; Admin Cobbleverse</title>
+  <title>Enfrentamientos &mdash; Admin BenjaVerse</title>
 </svelte:head>
 
 <div class="space-y-6">

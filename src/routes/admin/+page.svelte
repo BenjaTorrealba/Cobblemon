@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-  <title>Dashboard &mdash; Admin Cobbleverse</title>
+  <title>Dashboard &mdash; Admin BenjaVerse</title>
 </svelte:head>
 
 <div class="space-y-8">

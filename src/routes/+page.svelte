@@ -70,7 +70,7 @@
 </script>
 
 <svelte:head>
-  <title>Cobbleverse &mdash; Torneos de Cobblemon</title>
+  <title>BenjaVerse &mdash; Torneos de Cobblemon</title>
 </svelte:head>
 
 <!-- Hero -->
@@ -79,10 +79,11 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
 
     <h1 class="font-display text-2xl sm:text-3xl lg:text-4xl text-white mb-4 leading-relaxed">
-      COBBLEVERSE<br/><span class="text-gradient">TOURNAMENTS</span>
+      <br/><span class="text-gradient">BenjaVerse</span>
     </h1>
+    
     <p class="text-gray-400 text-lg max-w-xl mx-auto mb-8">
-      Compite en los torneos oficiales del servidor Cobblemon. Demuestra tu habilidad y conquista la clasificación.
+        <br>Un servidor de Cobblemon donde los mejores entrenadores se enfrentan. ¿Tienes lo que se necesita?
     </p>
     <a href="/news" class="btn-secondary">
       <span>📢</span> Ver noticias y anuncios
@@ -102,7 +103,7 @@
     <div class="card max-w-2xl glow-accent">
       <div class="flex items-start justify-between mb-6">
         <div>
-          <h3 class="text-lg font-bold text-white mb-1">Cobbleverse Server</h3>
+          <h3 class="text-lg font-bold text-white mb-1">BenjaVerse Server</h3>
           <p class="text-xs text-gray-500 font-mono">wish-underline.gl.joinmc.link</p>
         </div>
         {#if statusLoading}

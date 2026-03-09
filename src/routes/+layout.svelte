@@ -1,7 +1,7 @@
 <script lang="ts">
   import '../app.css';
   import { page } from '$app/stores';
-  import { goto } from '$app/navigation';
+  import { goto, invalidateAll } from '$app/navigation';
 
   let { data, children } = $props();
 
@@ -9,6 +9,7 @@
 
   async function userLogout() {
     await fetch('/api/auth/user-logout', { method: 'POST' });
+    await invalidateAll();
     goto('/');
   }
 </script>
@@ -19,11 +20,9 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <a href="/" class="flex items-center gap-3 group">
-            <div class="w-8 h-8 bg-gradient-to-br from-poke-accent to-poke-blue rounded-lg flex items-center justify-center text-sm">
-              ⚔
-            </div>
+            <img src="/squirtle.png" class="w-8 h-8 object-contain" alt="BenjaVerse" />
             <span class="font-display text-xs text-white group-hover:text-poke-accent transition-colors tracking-wider">
-              COBBLEVERSE
+              BenjaVerse
             </span>
           </a>
           <div class="flex items-center gap-4">
@@ -57,7 +56,7 @@
   {#if !isAdmin}
     <footer class="border-t border-poke-border bg-poke-surface py-8 mt-16">
       <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
-        <p>Cobbleverse Tournament Platform &mdash; {new Date().getFullYear()}</p>
+        <p>Server hecho por Benzuino el Babuino:v</p>
       </div>
     </footer>
   {/if}

@@ -99,7 +99,7 @@
 </script>
 
 <svelte:head>
-  <title>Noticias &mdash; Admin Cobbleverse</title>
+  <title>Noticias &mdash; Admin BenjaVerse</title>
 </svelte:head>
 
 <div class="space-y-6">

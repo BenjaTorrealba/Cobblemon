@@ -7,7 +7,7 @@
     `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 </script>
 
-<svelte:head><title>Equipo de @{team.user.username} &mdash; Cobbleverse</title></svelte:head>
+<svelte:head><title>Equipo de @{team.user.username} &mdash; BenjaVerse</title></svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-12">
   <a href="/teams" class="text-xs text-gray-500 hover:text-gray-300 mb-6 inline-block">← Todos los equipos</a>

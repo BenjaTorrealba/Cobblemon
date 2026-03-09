@@ -73,7 +73,7 @@
   }
 </script>
 
-<svelte:head><title>Mi Equipo &mdash; Cobbleverse</title></svelte:head>
+<svelte:head><title>Mi Equipo &mdash; BenjaVerse</title></svelte:head>
 
 <div class="max-w-5xl mx-auto px-4 py-12">
   <div class="mb-8">

@@ -29,7 +29,7 @@
 </script>
 
 <svelte:head>
-  <title>Noticias &mdash; Cobbleverse</title>
+  <title>Noticias &mdash; BenjaVerse</title>
 </svelte:head>
 
 <!-- Header -->
@@ -42,7 +42,7 @@
       <span class="text-3xl">📢</span>
       <h1 class="text-3xl font-bold text-white">Noticias y Anuncios</h1>
     </div>
-    <p class="text-gray-400 ml-14">Actualizaciones, nuevos torneos y todo lo que pasa en Cobbleverse.</p>
+    <p class="text-gray-400 ml-14">Actualizaciones, nuevos torneos y todo lo que pasa en BenjaVerse.</p>
   </div>
 </div>
 

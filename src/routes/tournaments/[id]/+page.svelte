@@ -21,7 +21,7 @@
 </script>
 
 <svelte:head>
-  <title>{tournament.name} &mdash; Cobbleverse</title>
+  <title>{tournament.name} &mdash; BenjaVerse</title>
 </svelte:head>
 
 <!-- Header Banner -->

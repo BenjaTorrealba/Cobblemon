@@ -31,7 +31,7 @@
 </script>
 
 <svelte:head>
-  <title>{item.title} &mdash; Cobbleverse</title>
+  <title>{item.title} &mdash; BenjaVerse</title>
 </svelte:head>
 
 <!-- Header -->

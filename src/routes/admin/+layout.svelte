@@ -33,7 +33,7 @@
           <div class="w-8 h-8 bg-gradient-to-br from-poke-accent to-poke-blue rounded-lg flex items-center justify-center text-sm">
             ⚔
           </div>
-          <span class="font-display text-xs text-white tracking-wider">COBBLEVERSE</span>
+          <span class="font-display text-xs text-white tracking-wider">BenjaVerse</span>
         </a>
         <div class="text-xs text-gray-500 pl-11">Panel Admin</div>
       </div>

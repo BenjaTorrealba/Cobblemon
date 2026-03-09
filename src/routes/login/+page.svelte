@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto, invalidateAll } from '$app/navigation';
 
   let username = $state('');
   let password = $state('');
@@ -17,6 +17,7 @@
         body: JSON.stringify({ username, password }),
       });
       if (res.ok) {
+        await invalidateAll();
         goto('/my-team');
       } else {
         const d = await res.json();
@@ -30,7 +31,7 @@
   }
 </script>
 
-<svelte:head><title>Iniciar sesión &mdash; Cobbleverse</title></svelte:head>
+<svelte:head><title>Iniciar sesión &mdash; BenjaVerse</title></svelte:head>
 
 <div class="min-h-[80vh] flex items-center justify-center p-4">
   <div class="w-full max-w-sm">

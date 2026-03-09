@@ -33,7 +33,7 @@
 </script>
 
 <svelte:head>
-  <title>Admin &mdash; Cobbleverse</title>
+  <title>Admin &mdash; BenjaVerse</title>
 </svelte:head>
 
 <div class="min-h-screen bg-poke-darker flex items-center justify-center p-4">
@@ -42,7 +42,7 @@
       <div class="w-14 h-14 bg-gradient-to-br from-poke-accent to-poke-blue rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">
         ⚔
       </div>
-      <h1 class="font-display text-sm text-white tracking-wider mb-1">COBBLEVERSE</h1>
+      <h1 class="font-display text-sm text-white tracking-wider mb-1">BenjaVerse</h1>
       <p class="text-gray-500 text-sm">Panel de Administración</p>
     </div>
 
