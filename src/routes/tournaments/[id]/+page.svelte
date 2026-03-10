@@ -82,6 +82,8 @@
   const completedMatches = $derived(tournament.matches.filter((m: { status: string }) => m.status === 'completed'));
   const scheduledMatches = $derived(tournament.matches.filter((m: { status: string }) => m.status === 'scheduled'));
 
+  let activeTab = $state<'info' | 'equipos'>('info');
+
   const spriteUrl = (id: number) =>
     `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 
@@ -194,7 +196,34 @@
   </div>
 </div>
 
+<!-- Tab bar -->
+<div class="border-b border-poke-border bg-poke-surface/60 sticky top-16 z-40">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex gap-0">
+      <button
+        onclick={() => activeTab = 'info'}
+        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors {activeTab === 'info' ? 'border-poke-accent text-poke-accent' : 'border-transparent text-gray-400 hover:text-white'}"
+      >
+        Información
+      </button>
+      <button
+        onclick={() => activeTab = 'equipos'}
+        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 {activeTab === 'equipos' ? 'border-poke-accent text-poke-accent' : 'border-transparent text-gray-400 hover:text-white'}"
+      >
+        Equipos
+        {#if data.userEntries.length > 0}
+          <span class="text-xs bg-poke-surface2 border border-poke-border rounded-full px-1.5 py-0.5 text-gray-400">
+            {data.userEntries.length}
+          </span>
+        {/if}
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+
+{#if activeTab === 'info'}
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
@@ -477,5 +506,84 @@
 
     </div>
   </div>
+
+{:else}
+  <!-- Equipos tab -->
+  {#if data.userEntries.length === 0}
+    <div class="text-center py-20 text-gray-500">
+      <p class="text-4xl mb-4">🎮</p>
+      <p>No hay participantes inscritos aún.</p>
+    </div>
+  {:else}
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {#each data.userEntries as entry}
+        <div class="bg-poke-surface border border-poke-border rounded-2xl overflow-hidden hover:border-poke-accent/40 transition-colors">
+          <!-- Player header -->
+          <div class="bg-poke-surface2 px-5 py-4 border-b border-poke-border flex items-center gap-3">
+            <a href="/profile/{entry.user.username}" class="flex items-center gap-3 group flex-1 min-w-0">
+                <div class="w-10 h-10 rounded-full bg-poke-surface border border-poke-border flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {#if (entry.user as any).favoritePokemonId}
+                    <img src={spriteUrl((entry.user as any).favoritePokemonId)} alt={entry.user.username}
+                         class="w-full h-full object-contain p-0.5" />
+                  {:else}
+                    <span class="text-poke-accent font-bold">{entry.user.username[0].toUpperCase()}</span>
+                  {/if}
+                </div>
+              <div class="min-w-0">
+                <p class="font-semibold text-white group-hover:text-poke-accent transition-colors truncate">
+                  @{entry.user.username}
+                </p>
+                {#if entry.registeredTeam}
+                  <p class="text-xs text-gray-500 truncate">{entry.registeredTeam.name}</p>
+                {/if}
+              </div>
+            </a>
+            <span class="text-xs text-poke-gold flex-shrink-0">🔒</span>
+          </div>
+          <!-- Pokemon grid -->
+          {#if entry.registeredTeam && entry.registeredTeam.pokemons.length > 0}
+            <div class="p-4 grid grid-cols-3 gap-3">
+              {#each entry.registeredTeam.pokemons as p}
+                <div class="flex flex-col items-center gap-1 group">
+                  <div class="relative w-full aspect-square bg-poke-surface2 rounded-xl border border-poke-border group-hover:border-poke-accent/40 transition-colors flex items-center justify-center overflow-hidden">
+                    <img
+                      src={spriteUrl(p.pokemonId)}
+                      alt={p.pokemonName}
+                      class="w-full h-full object-contain p-1 {(p as any).shiny ? 'drop-shadow-[0_0_8px_rgba(255,215,0,0.8)]' : ''}"
+                    />
+                    {#if (p as any).shiny}
+                      <span class="absolute top-1 right-1 text-[10px]">✨</span>
+                    {/if}
+                  </div>
+                  <p class="text-xs text-gray-300 capitalize text-center leading-tight">{p.pokemonName}</p>
+                  {#if p.item}
+                    <p class="text-[10px] text-gray-600 text-center leading-tight truncate w-full">{p.item}</p>
+                  {/if}
+                </div>
+              {/each}
+            </div>
+            <!-- Moves summary -->
+            <div class="px-4 pb-4 space-y-1">
+              {#each entry.registeredTeam.pokemons as p}
+                {#if p.move1 || p.move2 || p.move3 || p.move4}
+                  <div class="flex items-start gap-1.5 text-[11px]">
+                    <span class="text-gray-500 capitalize flex-shrink-0 w-20 truncate">{p.pokemonName}:</span>
+                    <div class="flex flex-wrap gap-1">
+                      {#each [p.move1, p.move2, p.move3, p.move4].filter(Boolean) as move}
+                        <span class="bg-poke-surface2 border border-poke-border rounded px-1 py-0.5 text-gray-400 capitalize">{move}</span>
+                      {/each}
+                    </div>
+                  </div>
+                {/if}
+              {/each}
+            </div>
+          {:else}
+            <div class="p-6 text-center text-sm text-gray-600">Sin equipo registrado</div>
+          {/if}
+        </div>
+      {/each}
+    </div>
+  {/if}
+{/if}
 
 </div>

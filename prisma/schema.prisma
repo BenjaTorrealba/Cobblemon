@@ -108,6 +108,10 @@ model User {
   comments           Comment[]
   reactions          Reaction[]
   showcasePokemons   ShowcasePokemon[]
+  posts              Post[]
+  postLikes          PostLike[]
+  postComments       PostComment[]
+  notifications      Notification[]
 }
 
 model ShowcasePokemon {
@@ -222,4 +226,44 @@ model Reaction {
 
   @@unique([userId, emoji, teamId])
   @@unique([userId, emoji, newsId])
+}
+
+model Post {
+  id        Int           @id @default(autoincrement())
+  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+  content   String
+  createdAt DateTime      @default(now())
+  likes     PostLike[]
+  comments  PostComment[]
+}
+
+model PostLike {
+  id     Int  @id @default(autoincrement())
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  @@unique([postId, userId])
+}
+
+model PostComment {
+  id        Int      @id @default(autoincrement())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    Int
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  type      String
+  message   String
+  link      String   @default("")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
 }

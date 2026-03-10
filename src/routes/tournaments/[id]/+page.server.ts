@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     prisma.userTournamentEntry.findMany({
       where: { tournamentId: id },
       include: {
-        user: { select: { username: true } },
+        user: { select: { username: true, favoritePokemonId: true } },
         registeredTeam: { include: { pokemons: { orderBy: { slot: 'asc' } } } },
       },
       orderBy: { registeredAt: 'asc' },

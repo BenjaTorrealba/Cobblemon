@@ -34,5 +34,33 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     include: { author: { select: { username: true } } },
   });
 
+  // Send notifications
+  if (teamId) {
+    const team = await prisma.team.findUnique({ where: { id: teamId }, select: { userId: true, name: true } });
+    if (team && team.userId !== locals.user.id) {
+      await (prisma as any).notification.create({
+        data: {
+          userId: team.userId,
+          type: 'comment_team',
+          message: `@${locals.user.username} comentó en tu equipo "${team.name}"`,
+          link: `/teams/${locals.user.username}/${teamId}`,
+        },
+      });
+    }
+  }
+  if (newsId) {
+    const news = await prisma.news.findUnique({ where: { id: newsId }, select: { authorId: true, title: true } });
+    if (news && news.authorId !== locals.user.id) {
+      await (prisma as any).notification.create({
+        data: {
+          userId: news.authorId,
+          type: 'comment_news',
+          message: `@${locals.user.username} comentó en la noticia "${news.title}"`,
+          link: `/news/${newsId}`,
+        },
+      });
+    }
+  }
+
   return json(comment, { status: 201 });
 };
