@@ -31,6 +31,7 @@
             <a href="/teams" class="text-sm text-gray-400 hover:text-white transition-colors">Equipos</a>
             {#if data.user}
               <a href="/my-team" class="text-sm text-gray-400 hover:text-white transition-colors">Mi Equipo</a>
+              <a href="/profile/{data.user.username}" class="text-sm text-gray-400 hover:text-white transition-colors">Mi Perfil</a>
               <button onclick={userLogout} class="text-xs text-gray-500 hover:text-gray-300 transition-colors">
                 @{data.user.username} · Salir
               </button>

@@ -59,6 +59,8 @@ model News {
   published   Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  comments    Comment[]
+  reactions   Reaction[]
 }
 
 model Match {
@@ -78,15 +80,19 @@ model Match {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  username     String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  username        String   @unique
+  passwordHash    String
+  createdAt       DateTime @default(now())
+  bio             String   @default("")
+  favoritePokemonId Int    @default(0)
   teams              Team[]
   tournamentEntries  UserTournamentEntry[]
   matchesAsUser1     Match[] @relation("User1Matches")
   matchesAsUser2     Match[] @relation("User2Matches")
   wonMatches         Match[] @relation("WonMatches")
+  comments           Comment[]
+  reactions          Reaction[]
 }
 
 model Team {
@@ -98,6 +104,8 @@ model Team {
   published   Boolean       @default(false)
   updatedAt   DateTime      @updatedAt
   pokemons    TeamPokemon[]
+  comments    Comment[]
+  reactions   Reaction[]
 }
 
 model TeamPokemon {
@@ -162,4 +170,32 @@ model RegisteredTeamPokemon {
   move4       String @default("")
 
   @@unique([teamId, slot])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+  content   String
+  createdAt DateTime @default(now())
+
+  team      Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId    Int?
+  news      News?    @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  newsId    Int?
+}
+
+model Reaction {
+  id       Int    @id @default(autoincrement())
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int
+  emoji    String
+
+  team     Team?  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId   Int?
+  news     News?  @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  newsId   Int?
+
+  @@unique([userId, emoji, teamId])
+  @@unique([userId, emoji, newsId])
 }
