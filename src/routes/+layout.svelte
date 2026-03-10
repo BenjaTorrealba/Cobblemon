@@ -28,7 +28,9 @@
           <div class="flex items-center gap-4">
             <a href="/" class="text-sm text-gray-400 hover:text-white transition-colors">Inicio</a>
             <a href="/news" class="text-sm text-gray-400 hover:text-white transition-colors">Noticias</a>
+            <a href="/tournaments" class="text-sm text-gray-400 hover:text-white transition-colors">Torneos</a>
             <a href="/teams" class="text-sm text-gray-400 hover:text-white transition-colors">Equipos</a>
+            <a href="/players" class="text-sm text-gray-400 hover:text-white transition-colors">Jugadores</a>
             {#if data.user}
               <a href="/my-team" class="text-sm text-gray-400 hover:text-white transition-colors">Mi Equipo</a>
               <a href="/profile/{data.user.username}" class="text-sm text-gray-400 hover:text-white transition-colors">Mi Perfil</a>

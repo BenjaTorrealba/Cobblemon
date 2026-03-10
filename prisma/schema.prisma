@@ -107,6 +107,16 @@ model User {
   wonMatches         Match[] @relation("WonMatches")
   comments           Comment[]
   reactions          Reaction[]
+  showcasePokemons   ShowcasePokemon[]
+}
+
+model ShowcasePokemon {
+  id          Int    @id @default(autoincrement())
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  pokemonId   Int
+  pokemonName String
+  slot        Int    @default(0)
 }
 
 model Team {

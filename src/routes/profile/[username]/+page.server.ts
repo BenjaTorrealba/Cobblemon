@@ -42,6 +42,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     },
   });
 
+  const showcasePokemons = profileUser
+    ? await (prisma as any).showcasePokemon.findMany({
+        where: { userId: profileUser.id },
+        orderBy: { slot: 'asc' },
+        select: { pokemonId: true, pokemonName: true },
+      }) as { pokemonId: number; pokemonName: string }[]
+    : [];
+
   if (!profileUser) error(404, 'Usuario no encontrado');
 
   // TS language server may have stale Prisma types; cast to access newly added scalar fields
@@ -94,5 +102,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     stats: { totalMatches, wins, losses: totalMatches - wins },
     recentMatches,
     isOwnProfile,
+    showcasePokemons,
   };
 };

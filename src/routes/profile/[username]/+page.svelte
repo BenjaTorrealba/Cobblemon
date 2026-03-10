@@ -36,11 +36,39 @@
   let savingProfile  = $state(false);
   let profileError   = $state('');
 
-  const shinies = $derived(
-    teams.flatMap((t: { pokemons: { shiny: boolean; pokemonId: number; pokemonName: string }[] }) =>
-      t.pokemons.filter(p => p.shiny)
-    )
-  );
+  // Showcase: manual list, not derived from teams
+  type ShowcaseItem = { pokemonId: number; pokemonName: string };
+  const showcasePokemons = $derived((data as any).showcasePokemons as ShowcaseItem[]);
+  let showcaseItems = $state<ShowcaseItem[]>(untrack(() => (data as any).showcasePokemons as ShowcaseItem[]));
+  let showcaseInput  = $state('');
+  let showcasePreviewId = $state(0);
+  let showcaseDebounce: ReturnType<typeof setTimeout>;
+
+  function onShowcaseInput(val: string) {
+    showcaseInput = val;
+    showcasePreviewId = 0;
+    clearTimeout(showcaseDebounce);
+    if (!val.trim()) return;
+    showcaseDebounce = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${val.trim().toLowerCase()}`);
+        if (res.ok) { const d = await res.json(); showcasePreviewId = d.id; }
+      } catch { /* ignore */ }
+    }, 500);
+  }
+
+  function addToShowcase() {
+    if (!showcasePreviewId || !showcaseInput.trim()) return;
+    const name = showcaseInput.trim().toLowerCase();
+    if (showcaseItems.find(p => p.pokemonId === showcasePreviewId)) return;
+    showcaseItems = [...showcaseItems, { pokemonId: showcasePreviewId, pokemonName: name }];
+    showcaseInput = '';
+    showcasePreviewId = 0;
+  }
+
+  function removeFromShowcase(id: number) {
+    showcaseItems = showcaseItems.filter(p => p.pokemonId !== id);
+  }
 
   const spriteUrl = (id: number, shiny = false) =>
     shiny
@@ -78,6 +106,7 @@
           pokedexSeen,
           pokedexCaught,
           ...regionState,
+          showcasePokemons: showcaseItems,
         }),
       });
       if (!res.ok) throw new Error('Error al guardar');
@@ -127,7 +156,7 @@
         <h1 class="text-2xl font-bold text-white">@{profileUser.username}</h1>
         {#if isOwnProfile && !editingProfile}
           <button
-            onclick={() => { editingProfile = true; bioInput = profileUser.bio ?? ''; favPokemonInput = String(profileUser.favoritePokemonId || ''); favPokemonId = profileUser.favoritePokemonId || 0; }}
+            onclick={() => { editingProfile = true; bioInput = profileUser.bio ?? ''; favPokemonInput = String(profileUser.favoritePokemonId || ''); favPokemonId = profileUser.favoritePokemonId || 0; showcaseItems = [...showcasePokemons]; }}
             class="btn-secondary text-xs px-3 py-1"
           >✏️ Editar perfil</button>
         {/if}
@@ -191,6 +220,54 @@
                   {region.icon} {region.label}
                 </button>
               {/each}
+            </div>
+          </div>
+          <!-- Vitrina shiny -->
+          <div>
+            <p class="label mb-2">✨ Vitrina shiny</p>
+            <!-- Current items -->
+            {#if showcaseItems.length > 0}
+              <div class="flex flex-wrap gap-2 mb-3">
+                {#each showcaseItems as p}
+                  <div class="relative group">
+                    <div class="w-14 h-14 rounded-xl border border-poke-gold/50 bg-poke-gold/5 overflow-hidden">
+                      <img
+                        src={spriteUrl(p.pokemonId, true)}
+                        alt={p.pokemonName}
+                        class="w-full h-full object-contain p-0.5"
+                        title={p.pokemonName}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onclick={() => removeFromShowcase(p.pokemonId)}
+                      class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-xs leading-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Quitar"
+                    >×</button>
+                    <p class="text-[10px] text-gray-400 mt-0.5 text-center capitalize truncate w-14">{p.pokemonName}</p>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+            <!-- Add input -->
+            <div class="flex items-center gap-2">
+              {#if showcasePreviewId}
+                <img src={spriteUrl(showcasePreviewId, true)} alt="" class="w-8 h-8 object-contain flex-shrink-0" />
+              {/if}
+              <input
+                type="text"
+                class="input flex-1 text-sm"
+                placeholder="charizard, mewtwo..."
+                value={showcaseInput}
+                oninput={(e) => onShowcaseInput(e.currentTarget.value)}
+                onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addToShowcase(); } }}
+              />
+              <button
+                type="button"
+                onclick={addToShowcase}
+                disabled={!showcasePreviewId}
+                class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium border border-poke-accent text-poke-accent hover:bg-poke-accent/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >+ Agregar</button>
             </div>
           </div>
           {#if profileError}<p class="text-xs text-red-400">{profileError}</p>{/if}
@@ -266,11 +343,11 @@
   </div>
 
   <!-- Shiny showcase -->
-  {#if shinies.length > 0}
+  {#if showcasePokemons.length > 0}
     <div>
-      <h2 class="section-title mb-4">✨ Vitrina shiny ({shinies.length})</h2>
+      <h2 class="section-title mb-4">✨ Vitrina shiny ({showcasePokemons.length})</h2>
       <div class="flex flex-wrap gap-3">
-        {#each shinies as p}
+        {#each showcasePokemons as p}
           <div class="text-center">
             <div class="w-16 h-16 rounded-xl border border-poke-gold/60 bg-poke-gold/5 overflow-hidden">
               <img
