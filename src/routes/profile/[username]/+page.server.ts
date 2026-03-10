@@ -44,6 +44,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
   if (!profileUser) error(404, 'Usuario no encontrado');
 
+  // TS language server may have stale Prisma types; cast to access newly added scalar fields
+  const pu = profileUser as typeof profileUser & Record<string, unknown>;
+
   const totalMatches = profileUser.matchesAsUser1.length + profileUser.matchesAsUser2.length;
   const wins = profileUser.wonMatches.length;
 
@@ -74,6 +77,17 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       bio: profileUser.bio,
       favoritePokemonId: profileUser.favoritePokemonId,
       createdAt: profileUser.createdAt,
+      pokedexSeen: pu.pokedexSeen as number,
+      pokedexCaught: pu.pokedexCaught as number,
+      kantoCompleted: pu.kantoCompleted as boolean,
+      johtoCompleted: pu.johtoCompleted as boolean,
+      hoennCompleted: pu.hoennCompleted as boolean,
+      sinnohCompleted: pu.sinnohCompleted as boolean,
+      unovaCompleted: pu.unovaCompleted as boolean,
+      kalosCompleted: pu.kalosCompleted as boolean,
+      alolaCompleted: pu.alolaCompleted as boolean,
+      galarCompleted: pu.galarCompleted as boolean,
+      paldeaCompleted: pu.paldeaCompleted as boolean,
     },
     teams: profileUser.teams,
     tournamentEntries: profileUser.tournamentEntries,

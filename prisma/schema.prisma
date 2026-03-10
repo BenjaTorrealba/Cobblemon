@@ -80,12 +80,26 @@ model Match {
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  username        String   @unique
-  passwordHash    String
-  createdAt       DateTime @default(now())
-  bio             String   @default("")
-  favoritePokemonId Int    @default(0)
+  id                Int      @id @default(autoincrement())
+  username          String   @unique
+  passwordHash      String
+  createdAt         DateTime @default(now())
+  bio               String   @default("")
+  favoritePokemonId Int      @default(0)
+  // Pokédex
+  pokedexSeen       Int      @default(0)
+  pokedexCaught     Int      @default(0)
+  // Region completion
+  kantoCompleted    Boolean  @default(false)
+  johtoCompleted    Boolean  @default(false)
+  hoennCompleted    Boolean  @default(false)
+  sinnohCompleted   Boolean  @default(false)
+  unovaCompleted    Boolean  @default(false)
+  kalosCompleted    Boolean  @default(false)
+  alolaCompleted    Boolean  @default(false)
+  galarCompleted    Boolean  @default(false)
+  paldeaCompleted   Boolean  @default(false)
+
   teams              Team[]
   tournamentEntries  UserTournamentEntry[]
   matchesAsUser1     Match[] @relation("User1Matches")

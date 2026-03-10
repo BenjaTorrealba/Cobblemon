@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   let { data } = $props();
 
   const spriteUrl = (id: number) =>
@@ -21,11 +22,17 @@
   {:else}
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {#each data.teams as team}
-        <a href="/teams/{team.user.username}" class="card hover:border-poke-accent/50 transition-colors group block">
+        <div class="card hover:border-poke-accent/50 transition-colors group block cursor-pointer"
+          onclick={() => goto(`/teams/${team.user.username}`)}
+          role="link" tabindex="0"
+          onkeydown={(e) => e.key === 'Enter' && goto(`/teams/${team.user.username}`)}
+        >
           <div class="flex items-start justify-between mb-4">
             <div>
               <h2 class="font-bold text-white group-hover:text-poke-accent transition-colors">{team.name}</h2>
-              <p class="text-xs text-gray-500">@{team.user.username}</p>
+              <a href="/profile/{team.user.username}"
+                class="text-xs text-gray-500 hover:text-poke-accent transition-colors"
+                onclick={(e) => e.stopPropagation()}>@{team.user.username}</a>
             </div>
             <span class="text-xs text-gray-600">{team.pokemons.length}/6</span>
           </div>
@@ -35,14 +42,16 @@
           <div class="flex gap-1 flex-wrap">
             {#each team.pokemons as p}
               <img
-                src={spriteUrl(p.pokemonId)}
+                src={p.shiny
+                  ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${p.pokemonId}.png`
+                  : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.pokemonId}.png`}
                 alt={p.pokemonName}
-                class="w-12 h-12 object-contain"
-                title={p.pokemonName}
+                class="w-12 h-12 object-contain rounded {p.shiny ? 'ring-1 ring-poke-gold/70' : ''}"
+                title="{p.pokemonName}{p.shiny ? ' ✨' : ''}"
               />
             {/each}
           </div>
-        </a>
+        </div>
       {/each}
     </div>
   {/if}
