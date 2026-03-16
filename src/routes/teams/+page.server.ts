@@ -8,7 +8,7 @@ export const load: PageServerLoad = async () => {
       user: { select: { username: true } },
       pokemons: { orderBy: { slot: 'asc' } },
     },
-    orderBy: { updatedAt: 'desc' },
+    orderBy: [{ user: { username: 'asc' } }, { updatedAt: 'desc' }],
   });
   return { teams };
 };

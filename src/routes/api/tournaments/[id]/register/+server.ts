@@ -87,8 +87,8 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 
   const body = await request.json();
 
-  // Admin path: toggle changesAllowed
-  if (locals.admin) {
+  // Admin path: toggle changesAllowed (only when entryId is explicitly provided)
+  if (locals.admin && body.entryId !== undefined) {
     const { entryId, changesAllowed } = body;
     if (entryId === undefined) return json({ error: 'Missing entryId' }, { status: 400 });
 

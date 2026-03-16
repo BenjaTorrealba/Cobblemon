@@ -58,9 +58,9 @@
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {#each filteredTeams as team}
         <div class="card hover:border-poke-accent/50 transition-colors group block cursor-pointer"
-          onclick={() => goto(`/teams/${team.user.username}`)}
+          onclick={() => goto(`/teams/${team.user.username}/${team.id}`)}
           role="link" tabindex="0"
-          onkeydown={(e) => e.key === 'Enter' && goto(`/teams/${team.user.username}`)}
+          onkeydown={(e) => e.key === 'Enter' && goto(`/teams/${team.user.username}/${team.id}`)}
         >
           <div class="flex items-start justify-between mb-4">
             <div>

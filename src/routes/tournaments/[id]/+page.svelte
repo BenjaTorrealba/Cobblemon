@@ -318,35 +318,7 @@
 
               <!-- Swap section: only shown when admin grants permission -->
               {#if myEntry.changesAllowed}
-                <div class="mt-4 p-4 rounded-xl border border-poke-gold/40 bg-poke-gold/5">
-                  <p class="text-poke-gold text-sm font-semibold mb-4">⚡ El admin habilitó 1 cambio de Pokémon</p>
-                  <div class="mb-4">
-                    <label class="label" for="swap-slot">Ranura a reemplazar</label>
-                    <select id="swap-slot" bind:value={swapSlot} class="input">
-                      {#each (myEntry.registeredTeam?.pokemons ?? []) as p}
-                        <option value={p.slot}>#{p.slot} — {p.pokemonName || '(vacío)'}</option>
-                      {/each}
-                    </select>
-                  </div>
-                  <PokemonSlotEditor bind:pokemon={swapPokemon} slot={swapSlot} />
-                  <div class="mt-4 flex items-center gap-3">
-                    <button onclick={submitSwap} disabled={swapping} class="btn-primary text-sm">
-                      {#if swapping}
-                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                        </svg>
-                      {/if}
-                      Confirmar cambio
-                    </button>
-                    <span class="text-xs text-gray-500">⚠️ Solo puedes hacer este cambio una vez.</span>
-                  </div>
-                  {#if swapMessage}
-                    <div class="mt-3 rounded-lg px-3 py-2 text-sm {swapMessageType === 'success' ? 'bg-emerald-900/30 border border-emerald-700/50 text-emerald-400' : 'bg-red-900/30 border border-red-700/50 text-red-400'}">
-                      {swapMessage}
-                    </div>
-                  {/if}
-                </div>
+                <!-- intentionally left empty here; swap form is in the Equipos tab -->
               {/if}
 
               <button onclick={unregister} disabled={registering} class="text-xs px-3 py-1.5 rounded-lg border border-red-700/50 text-red-400 hover:bg-red-900/30 transition-colors">
@@ -517,7 +489,7 @@
   {:else}
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {#each data.userEntries as entry}
-        <div class="bg-poke-surface border border-poke-border rounded-2xl overflow-hidden hover:border-poke-accent/40 transition-colors">
+        <div class="bg-poke-surface border border-poke-border rounded-2xl overflow-hidden hover:border-poke-accent/40 transition-colors {data.user && myEntry && (myEntry as any).id === entry.id && myEntry.changesAllowed ? 'md:col-span-2 xl:col-span-3' : ''}">
           <!-- Player header -->
           <div class="bg-poke-surface2 px-5 py-4 border-b border-poke-border flex items-center gap-3">
             <a href="/profile/{entry.user.username}" class="flex items-center gap-3 group flex-1 min-w-0">
@@ -540,42 +512,79 @@
             </a>
             <span class="text-xs text-poke-gold flex-shrink-0">🔒</span>
           </div>
-          <!-- Pokemon grid -->
+          <!-- Pokemon list + swap panel -->
           {#if entry.registeredTeam && entry.registeredTeam.pokemons.length > 0}
-            <div class="p-4 grid grid-cols-3 gap-3">
-              {#each entry.registeredTeam.pokemons as p}
-                <div class="flex flex-col items-center gap-1 group">
-                  <div class="relative w-full aspect-square bg-poke-surface2 rounded-xl border border-poke-border group-hover:border-poke-accent/40 transition-colors flex items-center justify-center overflow-hidden">
-                    <img
-                      src={spriteUrl(p.pokemonId)}
-                      alt={p.pokemonName}
-                      class="w-full h-full object-contain p-1 {(p as any).shiny ? 'drop-shadow-[0_0_8px_rgba(255,215,0,0.8)]' : ''}"
-                    />
-                    {#if (p as any).shiny}
-                      <span class="absolute top-1 right-1 text-[10px]">✨</span>
-                    {/if}
-                  </div>
-                  <p class="text-xs text-gray-300 capitalize text-center leading-tight">{p.pokemonName}</p>
-                  {#if p.item}
-                    <p class="text-[10px] text-gray-600 text-center leading-tight truncate w-full">{p.item}</p>
-                  {/if}
-                </div>
-              {/each}
-            </div>
-            <!-- Moves summary -->
-            <div class="px-4 pb-4 space-y-1">
-              {#each entry.registeredTeam.pokemons as p}
-                {#if p.move1 || p.move2 || p.move3 || p.move4}
-                  <div class="flex items-start gap-1.5 text-[11px]">
-                    <span class="text-gray-500 capitalize flex-shrink-0 w-20 truncate">{p.pokemonName}:</span>
-                    <div class="flex flex-wrap gap-1">
-                      {#each [p.move1, p.move2, p.move3, p.move4].filter(Boolean) as move}
-                        <span class="bg-poke-surface2 border border-poke-border rounded px-1 py-0.5 text-gray-400 capitalize">{move}</span>
-                      {/each}
+            {@const isMySwap = !!(data.user && myEntry && (myEntry as any).id === entry.id && myEntry.changesAllowed)}
+            <div class="flex {isMySwap ? 'flex-col lg:flex-row' : 'flex-col'}">
+              <!-- Left: Pokémon list -->
+              <div class="flex-1 min-w-0 divide-y divide-poke-border/40 {isMySwap ? 'lg:border-r lg:border-poke-border/40' : ''}">
+                {#each entry.registeredTeam.pokemons as p}
+                  <div class="flex items-start gap-3 px-4 py-3">
+                    <div class="relative flex-shrink-0 w-16 h-16 bg-poke-surface2 rounded-xl border border-poke-border flex items-center justify-center overflow-hidden">
+                      <img
+                        src={spriteUrl(p.pokemonId)}
+                        alt={p.pokemonName}
+                        class="w-full h-full object-contain p-1 {(p as any).shiny ? 'drop-shadow-[0_0_8px_rgba(255,215,0,0.8)]' : ''}"
+                      />
+                      {#if (p as any).shiny}
+                        <span class="absolute top-0.5 right-0.5 text-[10px]">✨</span>
+                      {/if}
+                    </div>
+                    <div class="flex-1 min-w-0 space-y-1">
+                      <p class="text-sm font-semibold text-white capitalize">{p.pokemonName}</p>
+                      <div class="flex flex-wrap gap-1.5 text-[11px] text-gray-500">
+                        {#if p.ability}<span class="capitalize">{p.ability}</span>{/if}
+                        {#if p.ability && p.item}<span>·</span>{/if}
+                        {#if p.item}<span class="capitalize">{p.item}</span>{/if}
+                      </div>
+                      <div class="flex flex-wrap gap-1">
+                        {#each [p.move1, p.move2, p.move3, p.move4].filter(Boolean) as move}
+                          <span class="bg-poke-surface border border-poke-border rounded px-1.5 py-0.5 text-[11px] text-gray-400 capitalize">{move}</span>
+                        {/each}
+                      </div>
                     </div>
                   </div>
-                {/if}
-              {/each}
+                {/each}
+              </div>
+
+              <!-- Right: Swap panel (only for current user when changesAllowed) -->
+              {#if isMySwap}
+                <div class="lg:w-96 shrink-0 border-t border-poke-gold/30 lg:border-t-0 bg-poke-gold/5">
+                  <div class="px-4 py-3 border-b border-poke-gold/20 flex items-center gap-2">
+                    <span class="text-poke-gold text-base">⚡</span>
+                    <p class="text-poke-gold text-sm font-semibold">Cambio habilitado</p>
+                    <span class="ml-auto text-xs text-gray-500">1 token</span>
+                  </div>
+                  <div class="p-4 space-y-3">
+                    <div>
+                      <label class="label" for="swap-slot">Ranura a reemplazar</label>
+                      <select id="swap-slot" bind:value={swapSlot} class="input">
+                        {#each (myEntry!.registeredTeam?.pokemons ?? []) as sp}
+                          <option value={sp.slot}>#{sp.slot} — {sp.pokemonName || '(vacío)'}</option>
+                        {/each}
+                      </select>
+                    </div>
+                    <PokemonSlotEditor bind:pokemon={swapPokemon} slot={swapSlot} />
+                    <div class="flex items-center gap-3 pt-1">
+                      <button onclick={submitSwap} disabled={swapping} class="btn-primary text-sm flex-1">
+                        {#if swapping}
+                          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                          </svg>
+                        {/if}
+                        Confirmar cambio
+                      </button>
+                    </div>
+                    <p class="text-xs text-gray-500">⚠️ Solo puedes hacer este cambio una vez.</p>
+                    {#if swapMessage}
+                      <div class="rounded-lg px-3 py-2 text-sm {swapMessageType === 'success' ? 'bg-emerald-900/30 border border-emerald-700/50 text-emerald-400' : 'bg-red-900/30 border border-red-700/50 text-red-400'}">
+                        {swapMessage}
+                      </div>
+                    {/if}
+                  </div>
+                </div>
+              {/if}
             </div>
           {:else}
             <div class="p-6 text-center text-sm text-gray-600">Sin equipo registrado</div>
